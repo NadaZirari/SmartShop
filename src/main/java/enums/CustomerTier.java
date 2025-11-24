@@ -1,8 +1,6 @@
 package enums;
 
 public enum CustomerTier {
-
-	
 	BASIC,
     SILVER,
     GOLD,
