@@ -7,9 +7,11 @@ import enums.PaymentType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -28,16 +30,21 @@ public class Paiement {
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private Long id;
 
-	    @ManyToOne
-	    private Commande commande;
+	 @ManyToOne(fetch = FetchType.LAZY)
+	 @JoinColumn(name = "commande_id")
+	 private Commande commande;
 
-	    private int numeroPaiement; // 1, 2, 3 ...
 
-	    private double montant;
+	 private Integer numeroPaiement; // séquentiel par commande
+	 private Double montant;
 
-	    @Enumerated(EnumType.STRING)
-	    private PaymentType typePaiement; // ESPECES, CHEQUE, VIREMENT
 
+	 @Enumerated(EnumType.STRING)
+	 private PaymentType type;
+
+	 
+	 private String reference; // chq/ref/virement
+	 private String banque;
 	    private LocalDateTime datePaiement;     // Date de l’opération par le client
 	    private LocalDateTime dateEncaissement; // Date effective d’encaissement
 
