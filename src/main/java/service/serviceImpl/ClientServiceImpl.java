@@ -11,37 +11,69 @@ import org.springframework.stereotype.Service;
 import entity.Client;
 import entity.Commande;
 import enums.CustomerTier;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import repository.ClientRepository;
 import service.ClientService;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ClientServiceImpl implements ClientService {
 
-	    private final ClientRepository clientRepository;
+	private final ClientRepository clientRepository;
+	private final CommandeRepository commandeRepository;
+	private final ClientMapper clientMapper;
+	private final CommandeMapper commandeMapper;
 
-	    @Override
-	    public Client createClient(Client client) {
-	        client.setNiveau(CustomerTier.BASIC);
-	        client.setTotalOrders(0);
-	        client.setTotalSpent(BigDecimal.ZERO);
-	        return clientRepository.save(client);
-	    }
 
-	    @Override
-	    public Client updateClient(Long id, Client client) {
-	        Client existing = clientRepository.findById(id)
-	                .orElseThrow(() -> new RuntimeException("Client not found"));
-	        existing.setNom(client.getNom());
-	        existing.setEmail(client.getEmail());
-	        return clientRepository.save(existing);
-	    }
+	@Override
+	public ClientDTO create(ClientDTO dto) {
+	Client c = clientMapper.toEntity(dto);
+	c.setNiveau(CustomerTier.BASIC);
+	c.setCreatedAt(LocalDateTime.now());
+	c.setTotalCommandes(0);
+	c.setTotalDepense(0.0);
+	Client saved = clientRepository.save(c);
+	return clientMapper.toDto(saved);
+	}
+	
+	
+	@Override
+	public Page<ClientDTO> getAll(Pageable pageable) {
+	return clientRepository.findAll(pageable).map(clientMapper::toDto);
+	}
 
-	    @Override
-	    public void deleteClient(Long id) {
-	        clientRepository.deleteById(id);
-	    }
+
+	@Override
+	public ClientDTO getById(Long id) {
+	Client c = clientRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new NotFoundException("Client introuvable"));
+	return clientMapper.toDto(c);
+	}
+	
+	
+	
+
+	@Override
+	public ClientDTO update(Long id, ClientDTO dto) {
+	Client c = clientRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new NotFoundException("Client introuvable"));
+	if (dto.getNom() != null) c.setNom(dto.getNom());
+	if (dto.getEmail() != null) c.setEmail(dto.getEmail());
+	if (dto.getTelephone() != null) c.setTelephone(dto.getTelephone());
+	Client saved = clientRepository.save(c);
+	return clientMapper.toDto(saved);
+	}
+
+
+	@Override
+	public void delete(Long id) {
+	Client c = clientRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new NotFoundException("Client introuvable"));
+	c.setDeleted(true);
+	clientRepository.save(c);
+	}
+	
 
 	    @Override
 	    public Client getClient(Long id) {
