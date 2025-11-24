@@ -75,34 +75,23 @@ public class ClientServiceImpl implements ClientService {
 	}
 	
 
-	    @Override
-	    public Client getClient(Long id) {
-	        return clientRepository.findById(id)
-	                .orElseThrow(() -> new RuntimeException("Client not found"));
-	    }
+	  
+	@Override
+	public List<CommandeDTO> getCommandeHistory(Long clientId) {
+	List<com.smartshop.commande.entite.Commande> commandes = commandeRepository.findByClientIdOrderByDateDesc(clientId);
+	return commandes.stream().map(commandeMapper::toDto).collect(Collectors.toList());
+	}
 
-	    @Override
-	    public List<Client> getAllClients() {
-	        return clientRepository.findAll();
-	    }
 
-	    @Override
-	    public Map<String, Object> getClientStats(Long id) {
-	        Client client = getClient(id);
-	        Map<String, Object> stats = new HashMap<>();
-	        stats.put("totalOrders", client.getTotalOrders());
-	        stats.put("totalSpent", client.getTotalSpent());
-	        stats.put("firstOrderDate", client.getCommandes().stream()
-	                .map(Commande::getDate)
-	                .min(LocalDateTime::compareTo)
-	                .orElse(null));
-	        stats.put("lastOrderDate", client.getCommandes().stream()
-	                .map(Commande::getDate)
-	                .max(LocalDateTime::compareTo)
-	                .orElse(null));
-	        stats.put("historiqueCommandes", client.getCommandes());
-	        return stats;
-	    }
+	@Override
+	public ClientStats getStats(Long clientId) {
+	Integer count = commandeRepository.countConfirmedByClient(clientId);
+	Double sum = commandeRepository.sumTotalConfirmedByClient(clientId);
+	ClientStats s = new ClientStats();
+	s.setTotalCommandes(count == null ? 0 : count);
+	s.setTotalDepense(sum == null ? 0.0 : round2(sum));
+	return s;
+	}
 
 	    @Override
 	    public void updateFidelityLevel(Client client) {
