@@ -19,7 +19,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 public class Client {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,15 +30,17 @@ public class Client {
     private String email;
 
     @Enumerated(EnumType.STRING)
-    private CustomerTier niveau = CustomerTier.BASIC;
+    private CustomerTier niveau  = CustomerTier.BASIC;
 
-    private int totalOrders = 0;
-    private BigDecimal totalSpent = BigDecimal.ZERO;
+    private Integer totalCommandes = 0;
+    private BigDecimal totalDepense = BigDecimal.ZERO;
 
     private LocalDate firstOrderDate;
     private LocalDate lastOrderDate;
     
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
     private List<Commande> commandes;
+
+	
 
 }
