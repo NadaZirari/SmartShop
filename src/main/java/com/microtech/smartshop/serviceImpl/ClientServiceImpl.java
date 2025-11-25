@@ -33,14 +33,12 @@ import java.util.stream.Collectors;
 @Transactional
 public class ClientServiceImpl implements ClientService {
 
-	@Autowired
-	private ClientRepository clientRepository;
-	@Autowired
-	private CommandeRepository commandeRepository;
-	@Autowired
-	private ClientMapper clientMapper;
-	@Autowired
-	private CommandeMapper commandeMapper;
+
+	private final ClientRepository clientRepository;
+
+	private final CommandeRepository commandeRepository;
+	private final ClientMapper clientMapper;
+	private final CommandeMapper commandeMapper;
 
 	@Override
 	public ClientDTO create(ClientDTO dto) {
