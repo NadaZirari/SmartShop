@@ -1,4 +1,4 @@
-package service.serviceImpl;
+package serviceImpl ;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
@@ -76,7 +76,7 @@ public class ClientServiceImpl implements ClientService {
 	Client c = clientRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new NotFoundException("Client introuvable"));
 	if (dto.getNom() != null) c.setNom(dto.getNom());
 	if (dto.getEmail() != null) c.setEmail(dto.getEmail());
-	if (dto.getPhone() != null) c.setTelephone(dto.getPhone());
+	if (dto.getTelephone() != null) c.setTelephone(dto.getTelephone());
 
 	Client saved = clientRepository.save(c);
 	return clientMapper.toDto(saved);
@@ -112,7 +112,7 @@ public class ClientServiceImpl implements ClientService {
 	@Override
 	public String getLoyaltyLevel(Long clientId) {
 	Client c = clientRepository.findByIdAndDeletedFalse(clientId).orElseThrow(() -> new NotFoundException("Client introuvable"));
-	return c.getNiveau().nom();
+	return c.getNiveau().name();
 	}
 
 
@@ -140,8 +140,8 @@ public class ClientServiceImpl implements ClientService {
 
 	List<Commande> commandes = commandeRepository.findByClientIdOrderByDateDesc(clientId);
 	if (!commandes.isEmpty()) {
-	    c.setLastOrderDate(commandes.get(0).getDate());
-	    c.setFirstOrderDate(commandes.get(commandes.size() - 1).getDate());
+	    c.setLastOrderDate(commandes.get(0).getDate().toLocalDate());
+	    c.setFirstOrderDate(commandes.get(commandes.size() - 1).getDate().toLocalDate());
 	}
 
 

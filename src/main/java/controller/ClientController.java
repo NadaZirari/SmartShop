@@ -13,47 +13,50 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import dto.ClientDTO;
 import entity.Client;
 import lombok.RequiredArgsConstructor;
 import service.ClientService;
+import service.ClientStats;
 
 @RestController
 @RequestMapping("/api/clients")
 @RequiredArgsConstructor
 public class ClientController {
 
-    private final ClientService clientService;
+    private  ClientService clientService;
 
     @PostMapping
-    public ResponseEntity<Client> createClient(@RequestBody Client client) {
+    public ResponseEntity<ClientDTO> createClient(@RequestBody ClientDTO clientDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(clientService.createClient(client));
+                .body(clientService.create(clientDTO));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Client> getClient(@PathVariable Long id) {
-        return ResponseEntity.ok(clientService.getClient(id));
+    public ResponseEntity<ClientDTO> getClient(@PathVariable Long id) {
+        return ResponseEntity.ok(clientService.getById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<Client>> getAllClients() {
-        return ResponseEntity.ok(clientService.getAllClients());
+    public ResponseEntity<Page<ClientDTO>> getAllClients(Pageable pageable) {
+        return ResponseEntity.ok(clientService.getAll( pageable));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Client> updateClient(@PathVariable Long id, @RequestBody Client client) {
-        return ResponseEntity.ok(clientService.updateClient(id, client));
+    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, @RequestBody ClientDTO clientDTO) {
+        return ResponseEntity.ok(clientService.update(id, clientDTO));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
-        clientService.deleteClient(id);
+        clientService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/stats")
-    public ResponseEntity<Map<String, Object>> getClientStats(@PathVariable Long id) {
-        return ResponseEntity.ok(clientService.getClientStats(id));
+    public ResponseEntity<ClientStats> getClientStats(@PathVariable Long id) {
+        return ResponseEntity.ok(clientService.getStats(id));
     }
 }

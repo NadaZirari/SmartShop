@@ -1,4 +1,4 @@
-package service.serviceImpl;
+package serviceImpl;
 
 public class ProductServiceImpl {
 

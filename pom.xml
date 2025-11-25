@@ -74,23 +74,21 @@
         </dependency>
 
         <!-- Tests Spring Boot -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webmvc-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+       <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+<!-- SpringDoc OpenAPI (Swagger) -->
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    <version>2.2.0</version>
+</dependency>
 
-        <!-- Dépendances internes -->
+
+        <!-- Dépendances internes (temporarily commented out) -->
+        <!--
         <dependency>
             <groupId>com.delivrey</groupId>
             <artifactId>Delivery</artifactId>
@@ -106,6 +104,7 @@
             <artifactId>parcels</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        -->
     </dependencies>
 
     <build>
