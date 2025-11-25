@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class ClientStats {
     private Integer totalCommandes;
-    private Double montantTotalDepense;
+    private Double totalDepense;
 }

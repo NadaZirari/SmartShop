@@ -117,7 +117,7 @@ public class ClientServiceImpl implements ClientService {
 
 
 	@Override
-	public void recalculateLoyaltyLevel(Longw clientId) {
+	public void recalculateLoyaltyLevel(Long clientId) {
 	Client c = clientRepository.findByIdAndDeletedFalse(clientId).orElseThrow(() -> new NotFoundException("Client introuvable"));
 
 
