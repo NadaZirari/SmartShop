@@ -1,19 +1,17 @@
 package dto;
 
 import lombok.Data;
-import java.time.LocalDateTime;
-
+import java.time.LocalDate;
 
 @Data
 public class ClientDTO {
-	private Long id;
-	private String name;
-	private String email;
-	private String phone;
-	private String tier;
-	private Integer totalCommandes;
-	private Double totalDepense;
-	private LocalDateTime firstOrderAt;
-	private LocalDateTime lastOrderAt;
-
+    private Long id;
+    private String nom; 
+    private String email;
+    private String telephone;  
+    private String niveau;  
+    private Integer totalCommandes;
+    private Double totalDepense;
+    private LocalDate firstOrderDate;  
+    private LocalDate lastOrderDate;  
 }

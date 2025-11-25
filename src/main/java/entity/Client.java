@@ -28,6 +28,7 @@ public class Client {
 
     private String nom;
     private String email;
+    private String telephone;
 
     @Enumerated(EnumType.STRING)
     private CustomerTier niveau  = CustomerTier.BASIC;
