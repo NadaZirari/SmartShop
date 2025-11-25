@@ -1,6 +1,15 @@
 package com.microtech.smartshop.entity;
 
 
+import com.microtech.smartshop.enums.PaymentStatus;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Builder;
+
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "payments")
 @Data

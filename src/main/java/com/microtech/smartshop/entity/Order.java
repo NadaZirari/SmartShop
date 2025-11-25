@@ -5,8 +5,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.mapstruct.Builder;
-import enums.OrderStatus;
+import lombok.Builder;
+import com.microtech.smartshop.enums.OrderStatus;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,7 +27,7 @@ public class Order {
     @ManyToOne
     private Client client;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "commande", cascade = CascadeType.ALL)
     private List<OrderItem> items;
 
     private LocalDateTime dateCreated;
@@ -37,4 +38,5 @@ public class Order {
     private String codePromo; // optional
     private OrderStatus status;
     private double montantRestant; // reste à payer
+
 }
