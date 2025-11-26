@@ -1,9 +1,12 @@
 package com.microtech.smartshop.dto;
 
+import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
+@Builder
 @Data
 public class CommandeDTO {
 private Long id;
@@ -16,4 +19,5 @@ private Double total;
 private Double montantRestant;
 private String codePromo;
 private String statut;
+    private List<OrderItemDTO> items;
 }

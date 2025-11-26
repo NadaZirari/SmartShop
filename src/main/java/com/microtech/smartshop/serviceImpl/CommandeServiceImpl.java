@@ -8,10 +8,16 @@ import com.microtech.smartshop.entity.*;
 import com.microtech.smartshop.enums.OrderStatus;
 import com.microtech.smartshop.repository.*;
 import com.microtech.smartshop.dto.*;
+import com.microtech.smartshop.enums.CustomerTier;
+import lombok.Builder;
 
+
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
+import java.util.List;
 
+@Service
 public class CommandeServiceImpl  implements CommandeService {
     private final CommandeRepository commandeRepository;
     private final ProductRepository productRepository;
@@ -27,7 +33,7 @@ public class CommandeServiceImpl  implements CommandeService {
 
     @Override
     @Transactional
-    public CommandeDTO createCommande(CommandeCreateDTO dto) {
+    public CommandeDTO createCommande(CommandeDTO dto) {
 
         Client client = clientRepository.findById(dto.getClientId())
                 .orElseThrow(() -> new RuntimeException("Client non trouvé"));
@@ -88,7 +94,7 @@ public class CommandeServiceImpl  implements CommandeService {
     }
 
     private double calculRemiseFidelite(Client client, double sousTotal) {
-        switch (client.getCustomerTier()) {
+        switch (client.getNiveau()) {
             case SILVER: return sousTotal >= 500 ? sousTotal * 0.05 : 0;
             case GOLD: return sousTotal >= 800 ? sousTotal * 0.10 : 0;
             case PLATINUM: return sousTotal >= 1200 ? sousTotal * 0.15 : 0;
@@ -102,5 +108,34 @@ public class CommandeServiceImpl  implements CommandeService {
         }
         return 0;
     }
+    private CommandeDTO mapToDTO(Commande c) {
+        return CommandeDTO.builder().id(c.getId())
+                .clientId(c.getClient().getId())
+                .sousTotal(c.getSousTotal())
+                .remise(c.getRemise())
+                .tva(c.getTva())
+                .total(c.getTotal())
+                .montantRestant(c.getMontantRestant())
+                .statut(c.getStatut() != null ? c.getStatut().name() : null) // <-- conversion enum -> String
+                .codePromo(c.getCodePromo())
+                .build();
+    }
 
+    @Override
+    public CommandeDTO getCommandeById(Long id) {
+        Commande c = commandeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
+        return mapToDTO(c);
+    }
+
+    @Override
+    public List<CommandeDTO> getCommandesByClient(Long clientId) {
+        List<CommandeDTO> list = new ArrayList<>();
+        for (Commande c : commandeRepository.findAll()) {
+            if (c.getClient().getId().equals(clientId)) {
+                list.add(mapToDTO(c));
+            }
+        }
+        return list;
+    }
 }
