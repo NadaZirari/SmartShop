@@ -67,7 +67,6 @@ public class CommandeServiceImpl  implements CommandeService {
             sousTotal += totalLigne;
         }
 
-        // Calcul remise fidélité (exemple)
         remise += calculRemiseFidelite(client, sousTotal);
 
         // Calcul remise code promo
@@ -87,4 +86,21 @@ public class CommandeServiceImpl  implements CommandeService {
 
         return mapToDTO(commande);
     }
+
+    private double calculRemiseFidelite(Client client, double sousTotal) {
+        switch (client.getCustomerTier()) {
+            case SILVER: return sousTotal >= 500 ? sousTotal * 0.05 : 0;
+            case GOLD: return sousTotal >= 800 ? sousTotal * 0.10 : 0;
+            case PLATINUM: return sousTotal >= 1200 ? sousTotal * 0.15 : 0;
+            default: return 0;
+        }
+    }
+
+    private double calculRemisePromo(String codePromo, double sousTotal) {
+        if (codePromo != null && codePromo.matches("PROMO-[A-Z0-9]{4}")) {
+            return sousTotal * 0.05;
+        }
+        return 0;
+    }
+
 }
