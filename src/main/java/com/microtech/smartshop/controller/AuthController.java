@@ -1,7 +1,7 @@
 package com.microtech.smartshop.controller;
 
-import com.smartshop.entity.User;
-import com.smartshop.service.UserService;
+import com.microtech.smartshop.entity.User;
+import com.microtech.smartshop.serviceImpl.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
