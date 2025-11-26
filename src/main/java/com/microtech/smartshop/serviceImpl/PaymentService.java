@@ -2,7 +2,9 @@ package com.microtech.smartshop.serviceImpl;
 
 
 
+import com.microtech.smartshop.dto.PaymentDTO;
 import com.microtech.smartshop.entity.Paiement;
+import com.microtech.smartshop.enums.OrderStatus;
 import com.microtech.smartshop.enums.PaymentType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,16 +27,17 @@ public class PaymentService {
     private final CommandeRepository commandeRepository;
 
     @Transactional
-    public Paiement enregistrerPaiement(Long commandeId, Paiement paiement) {
+    public PaymentDTO enregistrerPaiement(Long commandeId, Paiement paiement) {
 
         Commande commande = commandeRepository.findById(commandeId)
                 .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
 
         // Règle: paiement espèces ≤ 20 000 DH
-        if (paiement.getType() == PaymentType.ESPECES && paiement.getMontant() > 20000) {
+        if (paiement.getType() == PaymentType.ESPECES
+                && paiement.getMontant() > 20000) {
             paiement.setStatut(PaymentStatus.REJETE);
             paiement.setDateEncaissement(LocalDateTime.now());
-            return paymentRepository.save(paiement);
+            return mapToDTO(paymentRepository.save(paiement));
         }
 
         // Paiement fractionné autorisé
@@ -52,14 +55,28 @@ public class PaymentService {
         paiement.setCommande(commande);
         paymentRepository.save(paiement);
 
-        // Si paiement rejeté → commande ne peut pas être confirmée
+        // Mettre à jour la commande selon le paiement
         if (paiement.getStatut() == PaymentStatus.REJETE) {
-            commande.setStatut(com.microtech.smartshop.enums.OrderStatus.REJECTED);
+            commande.setStatut(OrderStatus.REJECTED);
         } else if (commande.getMontantRestant() <= 0) {
-            commande.setStatut(com.microtech.smartshop.enums.OrderStatus.CONFIRMED);
+            commande.setStatut(OrderStatus.CONFIRMED);
         }
 
         commandeRepository.save(commande);
-        return paiement;
+
+        return mapToDTO(paiement);
+    }
+
+
+    private PaymentDTO mapToDTO(Paiement paiement) {
+        return PaymentDTO.builder()
+                .id(paiement.getId())
+                .commandeId(paiement.getCommande().getId())
+                .montant(paiement.getMontant())
+                .type(paiement.getType())
+                .datePaiement(paiement.getDatePaiement())
+                .dateEncaissement(paiement.getDateEncaissement())
+                .statut(paiement.getStatut())
+                .build();
     }
 }
