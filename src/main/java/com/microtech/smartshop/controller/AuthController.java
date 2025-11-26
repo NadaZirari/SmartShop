@@ -31,5 +31,9 @@ public class AuthController {
         return ResponseEntity.ok("Connexion réussie ! Rôle : " + user.getRole());
     }
 
-
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok("Déconnecté avec succès.");
+    }
 }
