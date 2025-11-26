@@ -20,6 +20,7 @@ import com.microtech.smartshop.service.ClientStats;
 @RestController
 @RequestMapping("/api/clients")
 @RequiredArgsConstructor
+
 public class ClientController {
 
     private final  ClientService clientService;

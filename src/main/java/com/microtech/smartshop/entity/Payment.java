@@ -24,7 +24,7 @@ public class Payment {
     private Long id;
 
     @ManyToOne
-    private Order order;
+    private Commande commande;
 
     private int numeroPaiement;
     private double montant;

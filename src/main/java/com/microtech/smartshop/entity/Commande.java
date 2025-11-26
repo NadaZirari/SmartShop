@@ -32,7 +32,6 @@ public class Commande {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Client ayant passé la commande */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id")
     private Client client;
@@ -52,9 +51,6 @@ public class Commande {
 
     @Enumerated(EnumType.STRING)
     private OrderStatus statut = OrderStatus.PENDING;
-
-    @OneToMany(mappedBy = "commande", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Paiement> paiements;
 
 	
 
