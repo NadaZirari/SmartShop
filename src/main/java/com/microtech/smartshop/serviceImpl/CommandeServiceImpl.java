@@ -8,12 +8,16 @@ import com.microtech.smartshop.entity.*;
 import com.microtech.smartshop.enums.OrderStatus;
 import com.microtech.smartshop.repository.*;
 import com.microtech.smartshop.dto.*;
+import com.microtech.smartshop.entity.Commande;
+import com.microtech.smartshop.entity.OrderItem;
 import com.microtech.smartshop.enums.CustomerTier;
 import lombok.Builder;
 
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -138,4 +142,53 @@ public class CommandeServiceImpl  implements CommandeService {
         }
         return list;
     }
+
+
+
+
+
+    @Transactional
+    public void confirmOrder(Long orderId) {
+        Commande commande = commandeRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
+
+        if (!commande.getStatut().equals(OrderStatus.PENDING)) {
+            throw new RuntimeException("La commande n'est pas en statut PENDING");
+        }
+
+        if (commande.getMontantRestant() > 0) {
+            throw new RuntimeException("Impossible de confirmer, paiement incomplet");
+        }
+
+        // Décrémentation du stock
+        for (OrderItem item : commande.getOrderItems()) {
+            Product produit = item.getProduit();
+            produit.setStockDisponible(produit.getStockDisponible() - item.getQuantite());
+            productRepository.save(produit);
+        }
+
+        // Mise à jour du statut de la commande
+        commande.setStatut(OrderStatus.CONFIRMED);
+        commandeRepository.save(commande);
+
+        // Mise à jour du client
+        Client client = commande.getClient();
+        client.setTotalCommandes(client.getTotalCommandes() + 1);
+        client.setTotalDepense(client.getTotalDepense().add(BigDecimal.valueOf(commande.getTotal())));
+
+        // Recalcul du niveau de fidélité
+        if (client.getTotalDepense().compareTo(BigDecimal.valueOf(50000)) >= 0) {
+            client.setNiveau(CustomerTier.PLATINUM);
+        } else if (client.getTotalDepense().compareTo(BigDecimal.valueOf(20000)) >= 0) {
+            client.setNiveau(CustomerTier.GOLD);
+        } else if (client.getTotalDepense().compareTo(BigDecimal.valueOf(5000)) >= 0) {
+            client.setNiveau(CustomerTier.SILVER);
+        } else {
+            client.setNiveau(CustomerTier.BASIC);
+        }
+
+        clientRepository.save(client);
+    }
+
+
 }
