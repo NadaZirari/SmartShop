@@ -191,4 +191,18 @@ public class CommandeServiceImpl  implements CommandeService {
     }
 
 
+    @Override
+    @Transactional
+    public void cancelOrder(Long orderId) {
+        Commande commande = commandeRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
+
+        if (commande.getStatut() == OrderStatus.CONFIRMED) {
+            throw new RuntimeException("Impossible d’annuler une commande déjà confirmée");
+        }
+
+        commande.setStatut(OrderStatus.CANCELED);
+        commandeRepository.save(commande);
+    }
+
 }

@@ -32,4 +32,16 @@ public class CommandeController {
     public ResponseEntity<List<CommandeDTO>> getByClient(@PathVariable Long clientId) {
         return ResponseEntity.ok(commandeService.getCommandesByClient(clientId));
     }
+
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<String> confirmOrder(@PathVariable Long id) {
+        commandeService.confirmOrder(id);
+        return ResponseEntity.ok("Commande confirmée avec succès !");
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<String> cancelOrder(@PathVariable Long id) {
+        commandeService.cancelOrder(id);
+        return ResponseEntity.ok("Commande annulée avec succès !");
+    }
 }
