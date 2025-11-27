@@ -30,15 +30,13 @@ public class CommandeController {
         authUtil.requireClientOrAdmin(session);
         User user = authUtil.getUserFromSession(session);
 
-        // Si CLIENT → il ne peut créer une commande que pour lui-même
-        if (user.getRole() == UserRole.CLIENT) {
-            Long connectedClientId = user.getClient().getId();
-            if (!connectedClientId.equals(dto.getClientId())) {
-                throw new RuntimeException("Accès refusé : vous ne pouvez créer une commande que pour votre propre compte.");
-            }
+        // CLIENT ne peut créer que pour lui-même
+        if (user.getRole() == UserRole.CLIENT && !user.getClient().getId().equals(dto.getClientId())) {
+            throw new RuntimeException("Accès refusé : vous ne pouvez créer une commande que pour votre propre compte.");
         }
 
-        return ResponseEntity.ok(commandeService.createCommande(dto));
+        CommandeDTO created = commandeService.createCommande(dto);
+        return ResponseEntity.ok(created);
     }
 
     @GetMapping("/{id}")
@@ -49,15 +47,11 @@ public class CommandeController {
 
         CommandeDTO commande = commandeService.getCommandeById(id);
 
-        // Si CLIENT → vérifier qu'il consulte une commande qui lui appartient
-        if (user.getRole() == UserRole.CLIENT) {
-            Long connectedClientId = user.getClient().getId();
-            Long ownerClientId = commande.getClientId();
-
-            if (!connectedClientId.equals(ownerClientId)) {
-                throw new RuntimeException("Accès refusé : vous ne pouvez voir que vos propres commandes.");
-            }
+        // CLIENT ne peut consulter que ses commandes
+        if (user.getRole() == UserRole.CLIENT && !user.getClient().getId().equals(commande.getClientId())) {
+            throw new RuntimeException("Accès refusé : vous ne pouvez voir que vos propres commandes.");
         }
+
         return ResponseEntity.ok(commande);
     }
 
@@ -66,15 +60,14 @@ public class CommandeController {
         authUtil.requireClientOrAdmin(session);
         User user = authUtil.getUserFromSession(session);
 
-        // Si CLIENT → il ne peut voir que son historique
-        if (user.getRole() == UserRole.CLIENT) {
-            Long connectedClientId = user.getClient().getId();
-            if (!connectedClientId.equals(clientId)) {
-                throw new RuntimeException("Accès refusé : vous ne pouvez voir que vos propres commandes.");
-            }
+        // CLIENT ne peut consulter que son historique
+        if (user.getRole() == UserRole.CLIENT && !user.getClient().getId().equals(clientId)) {
+            throw new RuntimeException("Accès refusé : vous ne pouvez voir que vos propres commandes.");
         }
 
-        return ResponseEntity.ok(commandeService.getCommandesByClient(clientId));
+        List<CommandeDTO> commandes = commandeService.getCommandesByClient(clientId);
+        return ResponseEntity.ok(commandes);
+
     }
 
     @PostMapping("/{id}/confirm")

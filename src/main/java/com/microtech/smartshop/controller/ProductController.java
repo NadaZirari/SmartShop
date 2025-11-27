@@ -4,10 +4,12 @@ import com.microtech.smartshop.dto.ProductCreateDTO;
 import com.microtech.smartshop.service.ProductService;
 import com.microtech.smartshop.util.AuthUtil;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,10 +25,14 @@ public class ProductController {
 
 
     @PostMapping
-    public ResponseEntity<ProductDTO> create(@RequestBody ProductCreateDTO dto , HttpSession session) {
+    public ResponseEntity<ProductDTO> create(
+            @Valid @RequestBody ProductCreateDTO dto,
+            HttpSession session) {
         authUtil.requireAdmin(session);
-        return ResponseEntity.ok(productService.createProduct(dto));
+        ProductDTO created = productService.createProduct(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductDTO> getById(@PathVariable Long id ,  HttpSession session) {
@@ -50,10 +56,15 @@ public class ProductController {
 
     // Pagination + Sort + Filtrage
     @GetMapping
-    public Page<ProductDTO> getAll(Pageable pageable, HttpSession session) {
-
+    public ResponseEntity<Page<ProductDTO>> getAll(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            Pageable pageable,
+            HttpSession session) {
         authUtil.requireClientOrAdmin(session);
-        return productService.getAllProducts(pageable);
+        Page<ProductDTO> products = productService.getAllProductsFiltered( name,  minPrice,  maxPrice, pageable);
+        return ResponseEntity.ok(products);
     }
 
 

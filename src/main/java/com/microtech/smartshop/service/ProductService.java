@@ -12,5 +12,8 @@ public interface ProductService {
     ProductDTO updateProduct(Long id, ProductCreateDTO dto);
     ProductDTO getProductById(Long id);
     void deleteProduct(Long id); // soft delete
+
+    Page<ProductDTO> getAllProductsFiltered(String name, Double minPrice, Double maxPrice, Pageable pageable);
+
     Page<ProductDTO> getAllProducts(Pageable pageable);
 }

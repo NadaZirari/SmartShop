@@ -10,6 +10,7 @@ import com.microtech.smartshop.exception.NotFoundException;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -62,4 +63,16 @@ public class ProductServiceImpl implements ProductService {
                 .map(productMapper::toDTO);
     }
 
+    @Override
+    public Page<ProductDTO> getAllProductsFiltered(String name, Double minPrice, Double maxPrice, Pageable pageable) {
+        // Filtre dynamique
+        Page<Product> products = productRepository.findAllByDeletedFalseAndNameContainingIgnoreCaseAndPriceBetween(
+                StringUtils.hasText(name) ? name : "",
+                minPrice != null ? minPrice : 0,
+                maxPrice != null ? maxPrice : Double.MAX_VALUE,
+                pageable
+        );
+
+        return products.map(productMapper::toDTO);
+    }
 }
