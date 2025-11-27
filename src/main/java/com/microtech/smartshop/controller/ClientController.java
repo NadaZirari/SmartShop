@@ -1,5 +1,6 @@
 package com.microtech.smartshop.controller;
 
+import com.microtech.smartshop.enums.UserRole;
 import com.microtech.smartshop.util.AuthUtil;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -38,11 +39,22 @@ public class ClientController {
     @GetMapping("/{id}")
     public ResponseEntity<ClientDTO> getClient(@PathVariable Long id , HttpSession session) {
         authUtil.requireClientOrAdmin(session);
+
+        var user = authUtil.getUserFromSession(session);
+
+        // Si CLIENT → il ne peut voir que son propre profil
+        if (user.getRole() == UserRole.CLIENT) {
+            Long connectedClientId = user.getClient().getId();
+            if (!connectedClientId.equals(id)) {
+                throw new RuntimeException("Accès refusé : vous ne pouvez consulter que votre propre profil.");
+            }
+        }
         return ResponseEntity.ok(clientService.getById(id));
     }
 
     @GetMapping
-    public ResponseEntity<Page<ClientDTO>> getAllClients(Pageable pageable) {
+    public ResponseEntity<Page<ClientDTO>> getAllClients(Pageable pageable, HttpSession session) {
+        authUtil.requireAdmin(session);
         return ResponseEntity.ok(clientService.getAll( pageable));
     }
 
@@ -62,6 +74,16 @@ public class ClientController {
     @GetMapping("/{id}/stats")
     public ResponseEntity<ClientStats> getClientStats(@PathVariable Long id , HttpSession session) {
         authUtil.requireClientOrAdmin(session);
+
+        var user = authUtil.getUserFromSession(session);
+
+        // Si CLIENT → ne peut consulter que ses propres stats
+        if (user.getRole() == UserRole.CLIENT) {
+            Long connectedClientId = user.getClient().getId();
+            if (!connectedClientId.equals(id)) {
+                throw new RuntimeException("Accès refusé : vous ne pouvez voir que vos propres statistiques.");
+            }
+        }
         return ResponseEntity.ok(clientService.getStats(id));
     }
 }

@@ -1,5 +1,8 @@
 package com.microtech.smartshop.serviceImpl;
 
+import com.microtech.smartshop.entity.User;
+import com.microtech.smartshop.enums.UserRole;
+import com.microtech.smartshop.repository.UserRepository;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
@@ -39,17 +42,33 @@ public class ClientServiceImpl implements ClientService {
 	private final CommandeRepository commandeRepository;
 	private final ClientMapper clientMapper;
 	private final CommandeMapper commandeMapper;
+    private final UserRepository userRepository;
 
-	@Override
-	public ClientDTO create(ClientDTO dto) {
-		Client c = clientMapper.toEntity(dto);
-		c.setNiveau(CustomerTier.BASIC);
-		c.setCreatedAt(LocalDateTime.now());
-		c.setTotalCommandes(0);
-		c.setTotalDepense(BigDecimal.ZERO);
-		Client saved = clientRepository.save(c);
-		return clientMapper.toDto(saved);
-	}
+    @Override
+    public ClientDTO create(ClientDTO dto) {
+        // 1. Créer User
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setPassword(dto.getPassword()); // hash recommandé !
+        user.setRole(UserRole.CLIENT);
+        User savedUser = userRepository.save(user);
+
+        // 2. Créer Client
+        Client c = clientMapper.toEntity(dto);
+        c.setUser(savedUser); // association
+        c.setNiveau(CustomerTier.BASIC);
+        c.setCreatedAt(LocalDateTime.now());
+        c.setTotalCommandes(0);
+        c.setTotalDepense(BigDecimal.ZERO);
+
+        Client savedClient = clientRepository.save(c);
+
+        ClientDTO result = clientMapper.toDto(savedClient);
+        result.setUserId(savedUser.getId());
+        result.setUsername(savedUser.getUsername());
+
+        return result;
+    }
 
 	@Override
 	public Page<ClientDTO> getAll(Pageable pageable) {
@@ -60,23 +79,40 @@ public class ClientServiceImpl implements ClientService {
 	public ClientDTO getById(Long id) {
 		Client c = clientRepository.findByIdAndDeletedFalse(id)
 				.orElseThrow(() -> new NotFoundException("Client introuvable"));
-		return clientMapper.toDto(c);
+        ClientDTO dto = clientMapper.toDto(c);
+        dto.setUserId(c.getUser().getId());
+        dto.setUsername(c.getUser().getUsername());
+        return dto;
 	}
 
-	@Override
-	public ClientDTO update(Long id, ClientDTO dto) {
-		Client c = clientRepository.findByIdAndDeletedFalse(id)
-				.orElseThrow(() -> new NotFoundException("Client introuvable"));
-		if (dto.getNom() != null)
-			c.setNom(dto.getNom());
-		if (dto.getEmail() != null)
-			c.setEmail(dto.getEmail());
-		if (dto.getTelephone() != null)
-			c.setTelephone(dto.getTelephone());
+    @Override
+    public ClientDTO update(Long id, ClientDTO dto) {
+        Client client = clientRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new NotFoundException("Client introuvable"));
 
-		Client saved = clientRepository.save(c);
-		return clientMapper.toDto(saved);
-	}
+        if (dto.getNom() != null)
+            client.setNom(dto.getNom());
+        if (dto.getEmail() != null)
+            client.setEmail(dto.getEmail());
+        if (dto.getTelephone() != null)
+            client.setTelephone(dto.getTelephone());
+
+        // Optionnel : mise à jour du username dans User
+        if (dto.getUsername() != null) {
+            User user = client.getUser();
+            user.setUsername(dto.getUsername());
+            if (dto.getPassword() != null) {
+                user.setPassword(dto.getPassword()); // hash recommandé
+            }
+            userRepository.save(user);
+        }
+
+        Client savedClient = clientRepository.save(client);
+        ClientDTO result = clientMapper.toDto(savedClient);
+        result.setUserId(savedClient.getUser().getId());
+        result.setUsername(savedClient.getUser().getUsername());
+        return result;
+    }
 
 	@Override
 	public void delete(Long id) {

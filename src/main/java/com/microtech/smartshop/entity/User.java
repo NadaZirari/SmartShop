@@ -8,6 +8,7 @@ import lombok.*;
 @Table(name = "users")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 @Data
+@Builder
 public class User {
 
     @Id
@@ -25,6 +26,8 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    @OneToOne(mappedBy = "user")
+    private Client client;
 
 
 }

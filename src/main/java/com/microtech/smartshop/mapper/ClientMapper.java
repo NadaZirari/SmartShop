@@ -6,12 +6,21 @@ import com.microtech.smartshop.enums.CustomerTier;
 import org.mapstruct.*;
 import org.mapstruct.ReportingPolicy;
 
+import java.math.BigDecimal;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ClientMapper {
 
+    @Mapping(target = "userId", source = "user.id")          // ID de l'utilisateur lié
+    @Mapping(target = "username", source = "user.username") // username
+    @Mapping(target = "password", source = "user.password") // mdp
+    @Mapping(target = "role", source = "user.role")         // rôle
     @Mapping(target = "niveau", source = "niveau", qualifiedByName = "customerTierToString")
     ClientDTO toDto(Client client);
 
+
+    @Mapping(target = "niveau", source = "niveau", qualifiedByName = "stringToCustomerTier")
+    @Mapping(target = "user", ignore = true) //  ignore le mapping User pour la création/MAJ via DTO
     @Mapping(target = "niveau", source = "niveau", qualifiedByName = "stringToCustomerTier")
     @Mapping(target = "totalCommandes", source = "totalCommandes", defaultValue = "0")
     @Mapping(target = "totalDepense", source = "totalDepense")
@@ -19,6 +28,7 @@ public interface ClientMapper {
 
     @Named("customerTierToString")
     default String mapCustomerTierToString(CustomerTier niveau) {
+
         return niveau != null ? niveau.name() : null;
     }
 
@@ -28,11 +38,12 @@ public interface ClientMapper {
     }
 
     // BigDecimal <-> Double conversions
-    default Double mapTotalDepense(java.math.BigDecimal value) {
+    default Double mapTotalDepense(BigDecimal value) {
+
         return value != null ? value.doubleValue() : 0.0;
     }
 
-    default java.math.BigDecimal mapTotalDepense(Double value) {
-        return value != null ? java.math.BigDecimal.valueOf(value) : java.math.BigDecimal.ZERO;
+    default BigDecimal mapTotalDepense(Double value) {
+        return value != null ? BigDecimal.valueOf(value) : BigDecimal.ZERO;
     }
 }

@@ -9,6 +9,7 @@ public interface CommandeService {
     CommandeDTO getCommandeById(Long id);
     List<CommandeDTO> getCommandesByClient(Long clientId);
 
+
     void confirmOrder(Long id);
 
     void cancelOrder(Long id);

@@ -6,7 +6,12 @@ import java.time.LocalDate;
 @Data
 public class ClientDTO {
     private Long id;
-    private String nom; 
+    private String nom;
+    private Long userId;      // ID de l'utilisateur associé
+
+    private String username;
+    private String password;
+
     private String email;
     private String telephone;  
     private String niveau;  
