@@ -64,10 +64,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductDTO> getAllProductsFiltered(String name, Double minPrice, Double maxPrice, Pageable pageable) {
+    public Page<ProductDTO> getAllProductsFiltered(String nom, Double minPrice, Double maxPrice, Pageable pageable) {
         // Filtre dynamique
-        Page<Product> products = productRepository.findAllByDeletedFalseAndNameContainingIgnoreCaseAndPriceBetween(
-                StringUtils.hasText(name) ? name : "",
+        Page<Product> products = productRepository.findAllByDeletedFalseAndNomContainingIgnoreCaseAndPrixUnitaireBetween(
+                StringUtils.hasText(nom) ? nom : "",
                 minPrice != null ? minPrice : 0,
                 maxPrice != null ? maxPrice : Double.MAX_VALUE,
                 pageable
