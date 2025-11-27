@@ -10,10 +10,23 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username).orElse(null);
+    public User login(String username, String password) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        // Vérification simple du mot de passe (hash à prévoir en production)
+        if (!user.getPassword().equals(password)) {
+            throw new RuntimeException("Mot de passe incorrect");
+        }
+
+        return user;
     }
 
+
+    public User findById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+    }
 
 
 }

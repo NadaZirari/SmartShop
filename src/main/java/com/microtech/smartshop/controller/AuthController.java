@@ -1,6 +1,9 @@
 package com.microtech.smartshop.controller;
 
+import com.microtech.smartshop.dto.LoginRequestDTO;
+import com.microtech.smartshop.dto.UserDTO;
 import com.microtech.smartshop.entity.User;
+import com.microtech.smartshop.mapper.UserMapper;
 import com.microtech.smartshop.serviceImpl.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -13,27 +16,25 @@ import org.springframework.web.bind.annotation.*;
 
 public class AuthController {
     private final UserService userService;
+    private final UserMapper userMapper;
+
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(
-            @RequestParam String username,
-            @RequestParam String password,
-            HttpSession session) {
+    public ResponseEntity<UserDTO> login(@RequestBody LoginRequestDTO loginDTO, HttpSession session) {
+        User user = userService.login(loginDTO.getUsername(), loginDTO.getPassword());
 
-        User user = userService.findByUsername(username);
+        // Stockage session
+        session.setAttribute("USER_SESSION", user.getId());
 
-        if (user == null || !user.getPassword().equals(password)) {
-            return ResponseEntity.status(401).body("Identifiants invalides.");
-        }
-
-        session.setAttribute("user", user);
-
-        return ResponseEntity.ok("Connexion réussie ! Rôle : " + user.getRole());
+        // Conversion en DTO pour l'API (password exclu)
+        UserDTO userDTO = userMapper.toDTO(user);
+        return ResponseEntity.ok(userDTO);
     }
 
+
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpSession session) {
-        session.invalidate();
-        return ResponseEntity.ok("Déconnecté avec succès.");
+    public ResponseEntity<Void> logout(HttpSession session) {
+        session.invalidate(); // Supprime la session
+        return ResponseEntity.ok().build();
     }
 }

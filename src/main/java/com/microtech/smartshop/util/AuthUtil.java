@@ -1,32 +1,43 @@
 package com.microtech.smartshop.util;
 
+import com.microtech.smartshop.serviceImpl.UserService;
 import jakarta.servlet.http.HttpSession;
 import com.microtech.smartshop.entity.User;
 import com.microtech.smartshop.enums.UserRole;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 
+@Component
+@RequiredArgsConstructor
 public class AuthUtil {
 
 
 
-    public static User getUser(HttpSession session) {
-        return (User) session.getAttribute("user");
+    private final UserService userService;
+
+    // Récupère l'utilisateur complet via l'id stocké en session
+    public User getUser(HttpSession session) {
+        Long userId = (Long) session.getAttribute("USER_SESSION");
+        if (userId == null) return null;
+        return userService.findById(userId); // UserService doit avoir findById()
     }
 
-    public static void requireLogin(HttpSession session) {
+
+    public  void requireLogin(HttpSession session) {
         if (getUser(session) == null) {
             throw new RuntimeException("Vous devez être connecté.");
         }
     }
 
-    public static void requireAdmin(HttpSession session) {
+    public  void requireAdmin(HttpSession session) {
         User user = getUser(session);
         if (user == null || user.getRole() != UserRole.ADMIN) {
             throw new RuntimeException("Accès refusé : réservé à l'ADMIN.");
         }
     }
 
-    public static void requireClientOrAdmin(HttpSession session) {
+    public  void requireClientOrAdmin(HttpSession session) {
         User u = getUser(session);
         if (u == null) throw new RuntimeException("Non connecté.");
 

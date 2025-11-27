@@ -1,5 +1,7 @@
 package com.microtech.smartshop.controller;
 
+import com.microtech.smartshop.util.AuthUtil;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,15 +26,18 @@ import com.microtech.smartshop.service.ClientStats;
 public class ClientController {
 
     private final  ClientService clientService;
+    private final AuthUtil authUtil;
 
     @PostMapping
-    public ResponseEntity<ClientDTO> createClient(@RequestBody ClientDTO clientDTO) {
+    public ResponseEntity<ClientDTO> createClient(@RequestBody ClientDTO clientDTO , HttpSession session) {
+        authUtil.requireAdmin(session);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(clientService.create(clientDTO));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ClientDTO> getClient(@PathVariable Long id) {
+    public ResponseEntity<ClientDTO> getClient(@PathVariable Long id , HttpSession session) {
+        authUtil.requireClientOrAdmin(session);
         return ResponseEntity.ok(clientService.getById(id));
     }
 
@@ -42,18 +47,21 @@ public class ClientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, @RequestBody ClientDTO clientDTO) {
+    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, @RequestBody ClientDTO clientDTO , HttpSession session) {
+        authUtil.requireAdmin(session);
         return ResponseEntity.ok(clientService.update(id, clientDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteClient(@PathVariable Long id ,HttpSession session) {
+        authUtil.requireAdmin(session);
         clientService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/stats")
-    public ResponseEntity<ClientStats> getClientStats(@PathVariable Long id) {
+    public ResponseEntity<ClientStats> getClientStats(@PathVariable Long id , HttpSession session) {
+        authUtil.requireClientOrAdmin(session);
         return ResponseEntity.ok(clientService.getStats(id));
     }
 }
