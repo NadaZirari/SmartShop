@@ -1,5 +1,7 @@
 package com.microtech.smartshop.serviceImpl;
 
+import com.microtech.smartshop.util.AuthUtil;
+
 import com.microtech.smartshop.repository.ClientRepository;
 import com.microtech.smartshop.repository.CommandeRepository;
 import com.microtech.smartshop.repository.ProductRepository;
@@ -11,7 +13,6 @@ import com.microtech.smartshop.dto.*;
 import com.microtech.smartshop.entity.Commande;
 import com.microtech.smartshop.entity.OrderItem;
 import com.microtech.smartshop.enums.CustomerTier;
-import lombok.Builder;
 
 
 import org.springframework.stereotype.Service;
@@ -20,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Service
 public class CommandeServiceImpl  implements CommandeService {
@@ -27,13 +30,16 @@ public class CommandeServiceImpl  implements CommandeService {
     private final ProductRepository productRepository;
     private final ClientRepository clientRepository;
 
+
     public CommandeServiceImpl(CommandeRepository commandeRepository,
                                ProductRepository productRepository,
-                               ClientRepository clientRepository) {
+                               ClientRepository clientRepository,
+                               AuthUtil authUtil) {
         this.commandeRepository = commandeRepository;
         this.productRepository = productRepository;
         this.clientRepository = clientRepository;
     }
+
 
     @Override
     @Transactional
@@ -63,6 +69,7 @@ public class CommandeServiceImpl  implements CommandeService {
 
             if (itemDTO.getQuantite() > produit.getStockDisponible()) {
                 commande.setStatut(OrderStatus.REJECTED);
+                throw new RuntimeException("Quantité demandée supérieure au stock disponible pour " + produit.getNom());
             }
 
             OrderItem orderItem = OrderItem.builder()
@@ -113,38 +120,43 @@ public class CommandeServiceImpl  implements CommandeService {
         return 0;
     }
     private CommandeDTO mapToDTO(Commande c) {
-        return CommandeDTO.builder().id(c.getId())
+
+        List<OrderItemDTO> items = c.getOrderItems().stream()
+                .map(item -> OrderItemDTO.builder()
+                        .produitId(item.getProduit().getId())
+                        .quantite(item.getQuantite())
+                        .prixUnitaireHT(item.getPrixUnitaireHT())
+                        .totalLigne(item.getTotalLigne())
+                        .build())
+                .collect(Collectors.toList());
+
+        return CommandeDTO.builder()
+                .id(c.getId())
                 .clientId(c.getClient().getId())
                 .sousTotal(c.getSousTotal())
                 .remise(c.getRemise())
                 .tva(c.getTva())
                 .total(c.getTotal())
                 .montantRestant(c.getMontantRestant())
-                .statut(c.getStatut() != null ? c.getStatut().name() : null) // <-- conversion enum -> String
+                .statut(c.getStatut() != null ? c.getStatut().name() : null) // conversion enum -> String
                 .codePromo(c.getCodePromo())
+                .items(items)
                 .build();
     }
 
     @Override
     public CommandeDTO getCommandeById(Long id) {
-        Commande c = commandeRepository.findById(id)
+        Commande commande = commandeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
-        return mapToDTO(c);
+        return mapToDTO(commande);
     }
 
     @Override
     public List<CommandeDTO> getCommandesByClient(Long clientId) {
-        List<CommandeDTO> list = new ArrayList<>();
-        for (Commande c : commandeRepository.findAll()) {
-            if (c.getClient().getId().equals(clientId)) {
-                list.add(mapToDTO(c));
-            }
-        }
-        return list;
+        return commandeRepository.findByClientId(clientId).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
-
-
-
 
 
     @Transactional

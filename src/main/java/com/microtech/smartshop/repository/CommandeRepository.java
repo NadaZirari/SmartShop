@@ -13,8 +13,10 @@ import java.util.List;
 public interface CommandeRepository extends JpaRepository<Commande, Long> {
 	List<Commande> findByClientIdOrderByDateDesc(Long clientId);
 
+    List<Commande> findByClientId(Long clientId);
 
-	@Query("select coalesce(sum(c.total),0) from Commande c where c.client.id = :clientId and c.statut = OrderStatus.CONFIRMED")
+
+    @Query("select coalesce(sum(c.total),0) from Commande c where c.client.id = :clientId and c.statut = OrderStatus.CONFIRMED")
 	Double sumTotalConfirmedByClient(@Param("clientId") Long clientId);
 
 
