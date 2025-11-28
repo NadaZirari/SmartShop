@@ -2,6 +2,8 @@ package com.microtech.smartshop.serviceImpl;
 
 import com.microtech.smartshop.entity.User;
 import com.microtech.smartshop.enums.UserRole;
+import com.microtech.smartshop.exception.BusinessException;
+import com.microtech.smartshop.exception.ResourceNotFoundException;
 import com.microtech.smartshop.repository.UserRepository;
 import org.springframework.data.domain.Pageable;
 
@@ -20,7 +22,6 @@ import com.microtech.smartshop.dto.CommandeDTO;
 import com.microtech.smartshop.entity.Client;
 import com.microtech.smartshop.entity.Commande;
 import com.microtech.smartshop.enums.CustomerTier;
-import com.microtech.smartshop.exception.NotFoundException;
 import jakarta.transaction.Transactional;
 import com.microtech.smartshop.mapper.ClientMapper;
 import com.microtech.smartshop.mapper.CommandeMapper;
@@ -78,7 +79,7 @@ public class ClientServiceImpl implements ClientService {
 	@Override
 	public ClientDTO getById(Long id) {
 		Client c = clientRepository.findByIdAndDeletedFalse(id)
-				.orElseThrow(() -> new NotFoundException("Client introuvable"));
+				.orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
         ClientDTO dto = clientMapper.toDto(c);
         dto.setUserId(c.getUser().getId());
         dto.setUsername(c.getUser().getUsername());
@@ -88,7 +89,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public ClientDTO update(Long id, ClientDTO dto) {
         Client client = clientRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundException("Client introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
 
         if (dto.getNom() != null)
             client.setNom(dto.getNom());
@@ -117,7 +118,11 @@ public class ClientServiceImpl implements ClientService {
 	@Override
 	public void delete(Long id) {
 		Client c = clientRepository.findByIdAndDeletedFalse(id)
-				.orElseThrow(() -> new NotFoundException("Client introuvable"));
+				.orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
+
+        if (c.isDeleted()) {
+            throw new BusinessException("Ce client est déjà supprimé");
+        }
 		c.setDeleted(true);
 		clientRepository.save(c);
 	}
@@ -141,14 +146,14 @@ public class ClientServiceImpl implements ClientService {
 	@Override
 	public String getLoyaltyLevel(Long clientId) {
 		Client c = clientRepository.findByIdAndDeletedFalse(clientId)
-				.orElseThrow(() -> new NotFoundException("Client introuvable"));
+				.orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
 		return c.getNiveau().name();
 	}
 
 	@Override
 	public void recalculateLoyaltyLevel(Long clientId) {
 		Client c = clientRepository.findByIdAndDeletedFalse(clientId)
-				.orElseThrow(() -> new NotFoundException("Client introuvable"));
+				.orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
 
 		Integer confirmedCount = commandeRepository.countConfirmedByClient(clientId);
 		Double total = commandeRepository.sumTotalConfirmedByClient(clientId);

@@ -6,7 +6,6 @@ import com.microtech.smartshop.mapper.ProductMapper;
 import com.microtech.smartshop.repository.ProductRepository;
 import com.microtech.smartshop.service.ProductService;
 import org.springframework.data.domain.Page;
-import com.microtech.smartshop.exception.NotFoundException;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

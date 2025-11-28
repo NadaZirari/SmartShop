@@ -3,6 +3,7 @@ package com.microtech.smartshop.controller;
 import com.microtech.smartshop.enums.UserRole;
 import com.microtech.smartshop.util.AuthUtil;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,7 +31,7 @@ public class ClientController {
     private final AuthUtil authUtil;
 
     @PostMapping
-    public ResponseEntity<ClientDTO> createClient(@RequestBody ClientDTO clientDTO , HttpSession session) {
+    public ResponseEntity<ClientDTO> createClient(@Valid @RequestBody ClientDTO clientDTO , HttpSession session ) {
         authUtil.requireAdmin(session);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(clientService.create(clientDTO));
@@ -59,7 +60,7 @@ public class ClientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, @RequestBody ClientDTO clientDTO , HttpSession session) {
+    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, @Valid @RequestBody ClientDTO clientDTO , HttpSession session) {
         authUtil.requireAdmin(session);
         return ResponseEntity.ok(clientService.update(id, clientDTO));
     }
