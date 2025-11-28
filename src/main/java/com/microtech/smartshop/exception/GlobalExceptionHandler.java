@@ -3,8 +3,10 @@ package com.microtech.smartshop.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.validation.FieldError;
 
 import java.time.LocalDateTime;
 
@@ -34,6 +36,23 @@ public class GlobalExceptionHandler {
             ValidationException ex, HttpServletRequest request) {
 
         return buildErrorResponse(ex, HttpStatus.BAD_REQUEST, request);
+    }
+
+    // 400 - Erreur de validation des champs (@Valid)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex, HttpServletRequest request) {
+        
+        // Construire un message d'erreur détaillé
+        StringBuilder errorMessage = new StringBuilder("Erreur de validation : ");
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = error instanceof FieldError ? ((FieldError) error).getField() : error.getObjectName();
+            String message = error.getDefaultMessage();
+            errorMessage.append(String.format("[%s: %s]; ", fieldName, message));
+        });
+
+        ValidationException validationEx = new ValidationException(errorMessage.toString());
+        return buildErrorResponse(validationEx, HttpStatus.BAD_REQUEST, request);
     }
 
 
