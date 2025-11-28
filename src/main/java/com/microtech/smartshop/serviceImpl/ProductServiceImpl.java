@@ -2,6 +2,7 @@ package com.microtech.smartshop.serviceImpl;
 import com.microtech.smartshop.dto.ProductDTO;
 import com.microtech.smartshop.dto.ProductCreateDTO;
 import com.microtech.smartshop.entity.Product;
+import com.microtech.smartshop.exception.ResourceNotFoundException;
 import com.microtech.smartshop.mapper.ProductMapper;
 import com.microtech.smartshop.repository.ProductRepository;
 import com.microtech.smartshop.service.ProductService;
@@ -32,7 +33,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO updateProduct(Long id, ProductCreateDTO dto) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Produit non trouvé avec id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Produit non trouvé avec id " + id));
         productMapper.updateEntityFromDTO(dto, product);
         product = productRepository.save(product);
         return productMapper.toDTO(product);
@@ -41,9 +42,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Produit non trouvé avec id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Produit non trouvé avec id " + id));
         if(product.isDeleted()) {
-            throw new NotFoundException("Produit supprimé");
+            throw new ResourceNotFoundException("Produit supprimé");
         }
         return productMapper.toDTO(product);
     }
@@ -51,7 +52,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Produit non trouvé avec id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Produit non trouvé avec id " + id));
         product.setDeleted(true); // soft delete
         productRepository.save(product);
     }

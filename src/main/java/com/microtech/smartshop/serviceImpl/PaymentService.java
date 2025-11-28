@@ -6,6 +6,7 @@ import com.microtech.smartshop.dto.PaymentDTO;
 import com.microtech.smartshop.entity.Paiement;
 import com.microtech.smartshop.enums.OrderStatus;
 import com.microtech.smartshop.enums.PaymentType;
+import com.microtech.smartshop.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +31,7 @@ public class PaymentService {
     public PaymentDTO enregistrerPaiement(Long commandeId, Paiement paiement) {
 
         Commande commande = commandeRepository.findById(commandeId)
-                .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("Commande non trouvée"));
 
         // Règle: paiement espèces ≤ 20 000 DH
         if (paiement.getType() == PaymentType.ESPECES

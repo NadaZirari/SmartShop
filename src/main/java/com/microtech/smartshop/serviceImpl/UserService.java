@@ -1,5 +1,7 @@
 package com.microtech.smartshop.serviceImpl;
 import com.microtech.smartshop.entity.User;
+import com.microtech.smartshop.exception.BusinessException;
+import com.microtech.smartshop.exception.ResourceNotFoundException;
 import com.microtech.smartshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,11 +14,11 @@ public class UserService {
 
     public User login(String username, String password) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
 
         // Vérification simple du mot de passe (hash à prévoir en production)
         if (!user.getPassword().equals(password)) {
-            throw new RuntimeException("Mot de passe incorrect");
+            throw new BusinessException("Mot de passe incorrect");
         }
 
         return user;
