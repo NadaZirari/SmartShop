@@ -13,4 +13,10 @@ public interface CommandeService {
     void confirmOrder(Long id);
 
     void cancelOrder(Long id);
+
+    // Récupérer toutes les commandes (pour admin)
+    List<CommandeDTO> getAll();
+
+    // Supprimer une commande (soft delete ou delete réelle)
+    void delete(Long  id);
 }

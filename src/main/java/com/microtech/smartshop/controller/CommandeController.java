@@ -83,4 +83,22 @@ public class CommandeController {
         commandeService.cancelOrder(id);
         return ResponseEntity.ok("Commande annulée avec succès !");
     }
+
+    // GET ALL
+    @GetMapping
+    public ResponseEntity<List<CommandeDTO>> getAll( HttpSession session) {
+        authUtil.requireAdmin(session);
+        List<CommandeDTO> list = commandeService.getAll();
+        return ResponseEntity.ok(list);
+    }
+
+
+
+    // DELETE
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id, HttpSession session) {
+        authUtil.requireAdmin(session);
+        commandeService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

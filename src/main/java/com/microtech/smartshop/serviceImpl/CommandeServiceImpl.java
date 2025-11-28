@@ -217,4 +217,19 @@ public class CommandeServiceImpl  implements CommandeService {
         commandeRepository.save(commande);
     }
 
+    // GET ALL
+    public List<CommandeDTO> getAll() {
+        return commandeRepository.findAll()
+                .stream().map(this::mapToDTO).toList();
+    }
+
+
+
+    // Supprime (soft)
+    public void delete(Long id) {
+        if (!commandeRepository.existsById(id))
+            throw new RuntimeException("Commande introuvable");
+        commandeRepository.deleteById(id);
+    }
 }
+
