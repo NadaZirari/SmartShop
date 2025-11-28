@@ -19,6 +19,8 @@ import com.microtech.smartshop.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -68,5 +70,36 @@ public class PaymentService {
         commandeRepository.save(commande);
 
         return paymentMapper.toDTO(savedPaiement);
+    }
+
+    @Transactional
+    public PaymentDTO enregistrerPaiement(Long commandeId, PaymentDTO paymentDTO) {
+        Paiement paiement = paymentMapper.toEntity(paymentDTO);
+        return enregistrerPaiement(commandeId, paiement); // appel à l'autre méthode
+    }
+    @Transactional
+    public PaymentDTO validatePayment(Long paiementId) {
+        Paiement paiement = paymentRepository.findById(paiementId)
+                .orElseThrow(() -> new ResourceNotFoundException("Paiement non trouvé"));
+        paiement.setStatut(PaymentStatus.ENCAISSE);
+        paiement.setDateEncaissement(LocalDateTime.now());
+        paymentRepository.save(paiement);
+        return paymentMapper.toDTO(paiement);
+    }
+
+    @Transactional
+    public PaymentDTO rejectPayment(Long paiementId) {
+        Paiement paiement = paymentRepository.findById(paiementId)
+                .orElseThrow(() -> new ResourceNotFoundException("Paiement non trouvé"));
+        paiement.setStatut(PaymentStatus.REJETE);
+        paiement.setDateEncaissement(LocalDateTime.now());
+        paymentRepository.save(paiement);
+        return paymentMapper.toDTO(paiement);
+    }
+
+    public List<PaymentDTO> getPaymentsByOrderId(Long commandeId) {
+        return paymentRepository.findByCommandeId(commandeId).stream()
+                .map(paymentMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }
