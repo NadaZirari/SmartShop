@@ -1,5 +1,8 @@
 package com.microtech.smartshop.serviceImpl;
 
+import com.microtech.smartshop.exception.BusinessException;
+import com.microtech.smartshop.exception.ResourceNotFoundException;
+import com.microtech.smartshop.exception.ValidationException;
 import com.microtech.smartshop.util.AuthUtil;
 
 import com.microtech.smartshop.repository.ClientRepository;
@@ -46,10 +49,10 @@ public class CommandeServiceImpl  implements CommandeService {
     public CommandeDTO createCommande(CommandeDTO dto) {
 
         Client client = clientRepository.findById(dto.getClientId())
-                .orElseThrow(() -> new RuntimeException("Client non trouvé"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client non trouvé"));
 
         if (dto.getItems() == null || dto.getItems().isEmpty())
-            throw new RuntimeException("Commande doit contenir au moins un article");
+            throw new ValidationException("Commande doit contenir au moins un article");
 
         Commande commande = Commande.builder()
                 .client(client)
@@ -63,13 +66,13 @@ public class CommandeServiceImpl  implements CommandeService {
 
         for (OrderItemDTO itemDTO : dto.getItems()) {
             Product produit = productRepository.findById(itemDTO.getProduitId())
-                    .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Produit non trouvé"));
 
             double totalLigne = produit.getPrixUnitaire() * itemDTO.getQuantite();
 
             if (itemDTO.getQuantite() > produit.getStockDisponible()) {
                 commande.setStatut(OrderStatus.REJECTED);
-                throw new RuntimeException("Quantité demandée supérieure au stock disponible pour " + produit.getNom());
+                throw new BusinessException("Quantité demandée supérieure au stock disponible pour " + produit.getNom());
             }
 
             OrderItem orderItem = OrderItem.builder()
@@ -147,7 +150,7 @@ public class CommandeServiceImpl  implements CommandeService {
     @Override
     public CommandeDTO getCommandeById(Long id) {
         Commande commande = commandeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("Commande non trouvée"));
         return mapToDTO(commande);
     }
 
@@ -162,14 +165,14 @@ public class CommandeServiceImpl  implements CommandeService {
     @Transactional
     public void confirmOrder(Long orderId) {
         Commande commande = commandeRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("Commande non trouvée"));
 
         if (!commande.getStatut().equals(OrderStatus.PENDING)) {
-            throw new RuntimeException("La commande n'est pas en statut PENDING");
+            throw new BusinessException("La commande n'est pas en statut PENDING");
         }
 
         if (commande.getMontantRestant() > 0) {
-            throw new RuntimeException("Impossible de confirmer, paiement incomplet");
+            throw new BusinessException("Impossible de confirmer, paiement incomplet");
         }
 
         // Décrémentation du stock
@@ -207,10 +210,10 @@ public class CommandeServiceImpl  implements CommandeService {
     @Transactional
     public void cancelOrder(Long orderId) {
         Commande commande = commandeRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Commande non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("Commande non trouvée"));
 
         if (commande.getStatut() == OrderStatus.CONFIRMED) {
-            throw new RuntimeException("Impossible d’annuler une commande déjà confirmée");
+            throw new BusinessException("Impossible d’annuler une commande déjà confirmée");
         }
 
         commande.setStatut(OrderStatus.CANCELED);
@@ -228,7 +231,7 @@ public class CommandeServiceImpl  implements CommandeService {
     // Supprime (soft)
     public void delete(Long id) {
         if (!commandeRepository.existsById(id))
-            throw new RuntimeException("Commande introuvable");
+            throw new ResourceNotFoundException("Commande introuvable");
         commandeRepository.deleteById(id);
     }
 }
