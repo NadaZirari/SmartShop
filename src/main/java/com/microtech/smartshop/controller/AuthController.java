@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -33,8 +35,9 @@ public class AuthController {
 
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpSession session) {
+    public ResponseEntity<?> logout(HttpSession session) {
         session.invalidate(); // Supprime la session
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("message", "Déconnexion réussie"));
+
     }
 }

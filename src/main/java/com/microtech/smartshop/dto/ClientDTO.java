@@ -14,6 +14,7 @@ public class ClientDTO {
     @NotBlank(message = "Le nom est obligatoire")
     private String nom;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long userId;      // ID de l'utilisateur associé
 
 
@@ -28,13 +29,19 @@ public class ClientDTO {
 
     private String telephone;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String niveau;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer totalCommandes;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double totalDepense;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
 
-    private LocalDate firstOrderDate;  
+    private LocalDate firstOrderDate;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+
     private LocalDate lastOrderDate;  
 }

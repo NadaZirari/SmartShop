@@ -26,6 +26,7 @@ public class Product {
     @Column(nullable = false)
     private int stockDisponible;
 
+
     @Column(nullable = false)
     private boolean deleted = false; // Soft delete
 

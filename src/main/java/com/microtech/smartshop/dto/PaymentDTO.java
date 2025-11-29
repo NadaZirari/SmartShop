@@ -2,6 +2,8 @@ package com.microtech.smartshop.dto;
 
 
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microtech.smartshop.enums.PaymentType;
 import com.microtech.smartshop.enums.PaymentStatus;
 import lombok.Builder;
@@ -11,11 +13,17 @@ import lombok.Data;
 @Builder
 
 public class PaymentDTO {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+
     private Long id;
     private Long commandeId;
     private Double montant;
     private PaymentType type;
     private LocalDateTime datePaiement;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+
     private LocalDateTime dateEncaissement;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+
     private PaymentStatus statut;
 }
