@@ -51,4 +51,7 @@ public class Paiement {
 	    @Enumerated(EnumType.STRING)
 	    private PaymentStatus statut = PaymentStatus.EN_ATTENTE;
 
+
+
+
 }

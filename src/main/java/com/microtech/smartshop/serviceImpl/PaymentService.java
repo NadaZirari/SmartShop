@@ -84,6 +84,16 @@ public class PaymentService {
         paiement.setStatut(PaymentStatus.ENCAISSE);
         paiement.setDateEncaissement(LocalDateTime.now());
         paymentRepository.save(paiement);
+
+        // Mise à jour du montant restant de la commande
+        Commande commande = paiement.getCommande();
+        double totalEncaisse = commande.getPaiements().stream()
+                .filter(p -> p.getStatut() == PaymentStatus.ENCAISSE)
+                .mapToDouble(Paiement::getMontant)
+                .sum();
+        commande.setMontantRestant(Math.max(commande.getTotal() - totalEncaisse, 0));
+        commandeRepository.save(commande);
+
         return paymentMapper.toDTO(paiement);
     }
 

@@ -52,7 +52,8 @@ public class Commande {
     @Enumerated(EnumType.STRING)
     private OrderStatus statut = OrderStatus.PENDING;
 
-	
 
+    @OneToMany(mappedBy = "commande", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Paiement> paiements;
 	
 }
