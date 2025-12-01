@@ -1,6 +1,7 @@
 package com.microtech.smartshop.mapper;
 
 import com.microtech.smartshop.dto.PaymentDTO;
+import com.microtech.smartshop.entity.Commande;
 import com.microtech.smartshop.entity.Paiement;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +25,7 @@ public class PaymentMapper {
     public Paiement toEntity(PaymentDTO dto) {
         if (dto == null) return null;
 
-        return Paiement.builder()
+        Paiement paiement = Paiement.builder()
                 .id(dto.getId())
                 .montant(dto.getMontant())
                 .type(dto.getType())
@@ -32,5 +33,14 @@ public class PaymentMapper {
                 .dateEncaissement(dto.getDateEncaissement())
                 .statut(dto.getStatut())
                 .build();
+
+        //  reconstruire l'objet Commande
+        if (dto.getCommandeId() != null) {
+            Commande commande = new Commande();
+            commande.setId(dto.getCommandeId());
+            paiement.setCommande(commande);
+        }
+
+        return paiement;
     }
 }

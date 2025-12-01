@@ -40,11 +40,12 @@ public class PaymentController {
     @PutMapping("/{id}/status")
     public ResponseEntity<PaymentDTO> mettreAJourStatus(
             @PathVariable Long id,
-            @RequestParam PaymentStatus status,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateEncaissement
+            @RequestParam PaymentStatus status
+            ,HttpSession session  // ← ajouter session
+
     ) {
-        return ResponseEntity.ok(paymentService.mettreAJourStatus(id, status, dateEncaissement));
+        authUtil.requireAdmin(session);
+        return ResponseEntity.ok(paymentService.mettreAJourStatus(id, status));
     }
 
     @DeleteMapping("/{id}")

@@ -85,15 +85,15 @@ public class PaymentService {
 
         // MODIFIER STATUS / ENCAISSER
         @Transactional
-        public PaymentDTO mettreAJourStatus(Long id, PaymentStatus status, LocalDateTime dateEncaissement) {
+        public PaymentDTO mettreAJourStatus(Long id, PaymentStatus status) {
             Paiement paiement = paymentRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Paiement introuvable"));
 
             paiement.setStatut(status);
 
             if (status == PaymentStatus.ENCAISSE && paiement.getDateEncaissement() == null) {
-                paiement.setDateEncaissement(dateEncaissement != null ? dateEncaissement : LocalDateTime.now());
 
+                paiement.setDateEncaissement(LocalDateTime.now());
                 Commande cmd = paiement.getCommande();
                 BigDecimal nouveauRestant = cmd.getMontantRestant().subtract(paiement.getMontant());
                 cmd.setMontantRestant(nouveauRestant.max(BigDecimal.ZERO));
