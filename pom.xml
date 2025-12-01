@@ -93,24 +93,7 @@
 </dependency>
 
 
-        <!-- Dépendances internes (temporarily commented out) -->
-        <!--
-        <dependency>
-            <groupId>com.delivrey</groupId>
-            <artifactId>Delivery</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.delivrey</groupId>
-            <artifactId>DeliveryV2</artifactId>
-            <version>2.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.logistic</groupId>
-            <artifactId>parcels</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        -->
+
     </dependencies>
 
     <build>
