@@ -18,6 +18,7 @@ import com.microtech.smartshop.repository.PaymentRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,84 +33,112 @@ public class PaymentService {
     private final PaymentMapper paymentMapper;
 
 
+        private static final BigDecimal LIMITE_ESPECES = new BigDecimal("20000");
 
-    @Transactional
-    public PaymentDTO enregistrerPaiement(Long commandeId, Paiement paiement) {
 
-        Commande commande = commandeRepository.findById(commandeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Commande non trouvée"));
+        // CRÉER PAIEMENT
+        @Transactional
+        public PaymentDTO creerPaiement(PaymentDTO dto) {
+            Commande commande = commandeRepository.findById(dto.getCommandeId())
+                    .orElseThrow(() -> new RuntimeException("Commande introuvable"));
 
-        paiement.setCommande(commande);
-        paiement.setDatePaiement(LocalDateTime.now());
-
-        // Règle: paiement espèces ≤ 20 000 DH
-        if (paiement.getType() == PaymentType.ESPECES && paiement.getMontant() > 20000) {
-            paiement.setStatut(PaymentStatus.REJETE);
-            paiement.setDateEncaissement(LocalDateTime.now());
-        } else {
-            // Paiement fractionné autorisé
-            double montantRestantAvant = commande.getMontantRestant();
-            if (paiement.getMontant() > montantRestantAvant) {
-                paiement.setStatut(PaymentStatus.REJETE);
-                paiement.setDateEncaissement(LocalDateTime.now());
-            } else {
-                paiement.setStatut(PaymentStatus.ENCAISSE);
-                paiement.setDateEncaissement(LocalDateTime.now());
-                commande.setMontantRestant(Math.max(0, montantRestantAvant - paiement.getMontant()));
+            if (commande.getMontantRestant().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new RuntimeException("Commande déjà totalement payée");
             }
+
+            if (dto.getType() == PaymentType.ESPECES && dto.getMontant().compareTo(LIMITE_ESPECES) > 0) {
+                throw new RuntimeException("Paiement espèces dépasse la limite légale de 20,000 DH");
+            }
+
+            Paiement paiement = paymentMapper.toEntity(dto);
+            paiement.setCommande(commande);
+
+            // Numéro séquentiel
+            long numero = paymentRepository.countByCommande(commande) + 1;
+            paiement.setNumeroPaiement(numero);
+
+            LocalDateTime now = LocalDateTime.now();
+            paiement.setDatePaiement(now);
+
+            // Gestion de l'encaissement selon type
+            if (dto.getType() == PaymentType.ESPECES || dto.getType() == PaymentType.VIREMENT) {
+                paiement.setDateEncaissement(now);
+                paiement.setStatut(PaymentStatus.ENCAISSE);
+            } else { // CHÈQUE
+                paiement.setDateEncaissement(null);
+                paiement.setStatut(PaymentStatus.EN_ATTENTE);
+            }
+
+            Paiement saved = paymentRepository.save(paiement);
+
+            // Mise à jour montant restant de la commande
+            if (saved.getStatut() == PaymentStatus.ENCAISSE && saved.getMontant() != null) {
+                BigDecimal nouveauRestant = commande.getMontantRestant().subtract(saved.getMontant());
+                commande.setMontantRestant(nouveauRestant.max(BigDecimal.ZERO));
+                commandeRepository.save(commande);
+            }
+
+            return paymentMapper.toDTO(saved);
         }
 
-        Paiement savedPaiement = paymentRepository.save(paiement);
+        // MODIFIER STATUS / ENCAISSER
+        @Transactional
+        public PaymentDTO mettreAJourStatus(Long id, PaymentStatus status, LocalDateTime dateEncaissement) {
+            Paiement paiement = paymentRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Paiement introuvable"));
 
-        // Mise à jour statut commande
-        if (paiement.getStatut() == PaymentStatus.REJETE) {
-            commande.setStatut(OrderStatus.REJECTED);
-        } else if (commande.getMontantRestant() <= 0) {
-            commande.setStatut(OrderStatus.CONFIRMED);
+            paiement.setStatut(status);
+
+            if (status == PaymentStatus.ENCAISSE && paiement.getDateEncaissement() == null) {
+                paiement.setDateEncaissement(dateEncaissement != null ? dateEncaissement : LocalDateTime.now());
+
+                Commande cmd = paiement.getCommande();
+                BigDecimal nouveauRestant = cmd.getMontantRestant().subtract(paiement.getMontant());
+                cmd.setMontantRestant(nouveauRestant.max(BigDecimal.ZERO));
+                commandeRepository.save(cmd);
+            }
+
+            return paymentMapper.toDTO(paymentRepository.save(paiement));
         }
-        commandeRepository.save(commande);
 
-        return paymentMapper.toDTO(savedPaiement);
-    }
 
-    @Transactional
-    public PaymentDTO enregistrerPaiement(Long commandeId, PaymentDTO paymentDTO) {
-        Paiement paiement = paymentMapper.toEntity(paymentDTO);
-        return enregistrerPaiement(commandeId, paiement); // appel à l'autre méthode
-    }
-    @Transactional
-    public PaymentDTO validatePayment(Long paiementId) {
-        Paiement paiement = paymentRepository.findById(paiementId)
-                .orElseThrow(() -> new ResourceNotFoundException("Paiement non trouvé"));
-        paiement.setStatut(PaymentStatus.ENCAISSE);
-        paiement.setDateEncaissement(LocalDateTime.now());
-        paymentRepository.save(paiement);
+        // ANNULER PAIEMENT
+        @Transactional
+            public PaymentDTO annulerPaiement(Long id) {
+            Paiement paiement = paymentRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Paiement introuvable"));
 
-        // Mise à jour du montant restant de la commande
-        Commande commande = paiement.getCommande();
-        double totalEncaisse = commande.getPaiements().stream()
-                .filter(p -> p.getStatut() == PaymentStatus.ENCAISSE)
-                .mapToDouble(Paiement::getMontant)
-                .sum();
-        commande.setMontantRestant(Math.max(commande.getTotal() - totalEncaisse, 0));
-        commandeRepository.save(commande);
+            Commande cmd = paiement.getCommande();
+            if (paiement.getStatut() == PaymentStatus.ENCAISSE) {
+                cmd.setMontantRestant(cmd.getMontantRestant().add(paiement.getMontant()));
+                commandeRepository.save(cmd);
+            }
 
-        return paymentMapper.toDTO(paiement);
-    }
+            paymentRepository.delete(paiement);
+            return paymentMapper.toDTO(paiement);
+        }
 
-    @Transactional
-    public PaymentDTO rejectPayment(Long paiementId) {
-        Paiement paiement = paymentRepository.findById(paiementId)
-                .orElseThrow(() -> new ResourceNotFoundException("Paiement non trouvé"));
-        paiement.setStatut(PaymentStatus.REJETE);
-        paiement.setDateEncaissement(LocalDateTime.now());
-        paymentRepository.save(paiement);
-        return paymentMapper.toDTO(paiement);
-    }
+        // GET ALL PAIEMENTS
+        public List<PaymentDTO> getAll() {
+            return paymentRepository.findAll().stream()
+                    .map(paymentMapper::toDTO)
+                    .collect(Collectors.toList());
+        }
 
-    public List<PaymentDTO> getPaymentsByOrderId(Long commandeId) {
-        return paymentRepository.findByCommandeId(commandeId).stream()
-                .map(paymentMapper::toDTO)
-                .collect(Collectors.toList());
-    }
+        // GET PAIEMENTS D'UNE COMMANDE
+        public List<PaymentDTO> getByCommande(Long commandeId) {
+            Commande commande = commandeRepository.findById(commandeId)
+                    .orElseThrow(() -> new RuntimeException("Commande introuvable"));
+
+            return paymentRepository.findByCommandeOrderByNumeroPaiementAsc(commande).stream()
+                    .map(paymentMapper::toDTO)
+                    .collect(Collectors.toList());
+        }
+
+        // GET ONE PAIEMENT
+        public PaymentDTO getById(Long id) {
+            Paiement paiement = paymentRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Paiement introuvable"));
+            return paymentMapper.toDTO(paiement);
+        }
 }

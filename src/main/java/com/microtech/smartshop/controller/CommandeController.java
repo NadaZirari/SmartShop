@@ -39,7 +39,7 @@ public class CommandeController {
         return ResponseEntity.ok(created);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/orders/{id}")
     public ResponseEntity<CommandeDTO> getById(@PathVariable Long id, HttpSession session) {
         authUtil.requireClientOrAdmin(session);
 

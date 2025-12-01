@@ -43,6 +43,7 @@ public class CommandeServiceImpl  implements CommandeService {
         this.clientRepository = clientRepository;
     }
 
+    private static final BigDecimal TVA_RATE = new BigDecimal("0.20");
 
     @Override
     @Transactional
@@ -61,7 +62,7 @@ public class CommandeServiceImpl  implements CommandeService {
                 .codePromo(dto.getCodePromo())
                 .build();
 
-        double sousTotal = 0.0;
+        BigDecimal sousTotal = BigDecimal.ZERO;
         double remise = 0.0;
 
         for (OrderItemDTO itemDTO : dto.getItems()) {
@@ -84,23 +85,34 @@ public class CommandeServiceImpl  implements CommandeService {
                     .build();
 
             commande.getOrderItems().add(orderItem);
-            sousTotal += totalLigne;
+
+            // addition en BigDecimal
+            sousTotal = sousTotal.add(BigDecimal.valueOf(totalLigne));
         }
 
-        remise += calculRemiseFidelite(client, sousTotal);
+// Calcul des remises
+        remise += calculRemiseFidelite(client, sousTotal.doubleValue());
+        remise += calculRemisePromo(dto.getCodePromo(), sousTotal.doubleValue());
 
-        // Calcul remise code promo
-        remise += calculRemisePromo(dto.getCodePromo(), sousTotal);
+// conversion remise double -> BigDecimal
+        BigDecimal bdRemise = BigDecimal.valueOf(remise);
 
-        double montantHT = sousTotal - remise;
-        double tva = montantHT * 0.20;
-        double total = montantHT + tva;
+// Montant HT
+        BigDecimal montantHT = sousTotal.subtract(bdRemise);
 
+// TVA
+        BigDecimal tva = montantHT.multiply(BigDecimal.valueOf(0.20));
+
+// Total
+        BigDecimal total = montantHT.add(tva);
+
+// Affectation
         commande.setSousTotal(sousTotal);
-        commande.setRemise(remise);
+        commande.setRemise(remise); // reste double
         commande.setTva(tva);
         commande.setTotal(total);
         commande.setMontantRestant(total);
+
 
         commandeRepository.save(commande);
 
@@ -171,7 +183,7 @@ public class CommandeServiceImpl  implements CommandeService {
             throw new BusinessException("La commande n'est pas en statut PENDING");
         }
 
-        if (commande.getMontantRestant() > 0) {
+        if (commande.getMontantRestant().compareTo(BigDecimal.ZERO) > 00) {
             throw new BusinessException("Impossible de confirmer, paiement incomplet");
         }
 
@@ -189,7 +201,7 @@ public class CommandeServiceImpl  implements CommandeService {
         // Mise à jour du client
         Client client = commande.getClient();
         client.setTotalCommandes(client.getTotalCommandes() + 1);
-        client.setTotalDepense(client.getTotalDepense().add(BigDecimal.valueOf(commande.getTotal())));
+        client.setTotalDepense(client.getTotalDepense().add(commande.getTotal()));
 
         // Recalcul du niveau de fidélité
         if (client.getTotalDepense().compareTo(BigDecimal.valueOf(50000)) >= 0) {

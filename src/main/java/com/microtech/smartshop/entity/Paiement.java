@@ -1,5 +1,6 @@
 package com.microtech.smartshop.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.microtech.smartshop.enums.PaymentStatus;
@@ -28,24 +29,20 @@ import lombok.NoArgsConstructor;
 public class Paiement {
 	 @Id
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private Long id;
+	    private Long  id;
 
 	 @ManyToOne(fetch = FetchType.LAZY)
 	 @JoinColumn(name = "commande_id")
 	 private Commande commande;
 
 
-	 private Integer numeroPaiement; // séquentiel par commande
-	 private Double montant;
+	 private Long numeroPaiement; // séquentiel par commande
+	 private BigDecimal montant;
 
 
 	 @Enumerated(EnumType.STRING)
 	 private PaymentType type;
-
-	 
-	 private String reference; // chq/ref/virement
-	 private String banque;
-	    private LocalDateTime datePaiement;     // Date de l’opération par le client
+     private LocalDateTime datePaiement;     // Date de l’opération par le client
 	    private LocalDateTime dateEncaissement; // Date effective d’encaissement
 
 	    @Enumerated(EnumType.STRING)

@@ -1,5 +1,6 @@
 package com.microtech.smartshop.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,11 +42,11 @@ public class Commande {
 
     private LocalDateTime date= LocalDateTime.now();
 
-    private double sousTotal;
+    private BigDecimal  sousTotal;
     private double remise;
-    private double tva;
-    private double total;
-    private double montantRestant;
+    private BigDecimal  tva;
+    private BigDecimal  total;
+    private BigDecimal montantRestant;
 
     private String codePromo;
 

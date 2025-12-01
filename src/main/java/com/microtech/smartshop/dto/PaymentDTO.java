@@ -1,6 +1,7 @@
 package com.microtech.smartshop.dto;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,7 +18,7 @@ public class PaymentDTO {
 
     private Long id;
     private Long commandeId;
-    private Double montant;
+    private BigDecimal montant;
     private PaymentType type;
     private LocalDateTime datePaiement;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

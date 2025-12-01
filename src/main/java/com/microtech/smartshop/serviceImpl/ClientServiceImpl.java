@@ -8,6 +8,7 @@ import com.microtech.smartshop.repository.UserRepository;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -139,8 +140,9 @@ public class ClientServiceImpl implements ClientService {
 		Double sum = commandeRepository.sumTotalConfirmedByClient(clientId);
 		ClientStats s = new ClientStats();
 		s.setTotalCommandes(count == null ? 0 : count);
-		s.setTotalDepense(sum == null ? 0.0 : round2(sum));
-		return s;
+        s.setTotalDepense(sum == null ? BigDecimal.ZERO : BigDecimal.valueOf(sum).setScale(2, RoundingMode.HALF_UP));
+
+        return s;
 	}
 
 	@Override

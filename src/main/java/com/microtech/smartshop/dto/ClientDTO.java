@@ -3,6 +3,8 @@ package com.microtech.smartshop.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -33,10 +35,10 @@ public class ClientDTO {
     private String niveau;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Integer totalCommandes;
+    private BigDecimal totalCommandes;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Double totalDepense;
+    private BigDecimal totalDepense;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
 

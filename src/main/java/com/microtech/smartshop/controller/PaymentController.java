@@ -1,8 +1,10 @@
 package com.microtech.smartshop.controller;
 
 
+import com.microtech.smartshop.enums.PaymentStatus;
 import com.microtech.smartshop.mapper.PaymentMapper;
 import com.microtech.smartshop.repository.CommandeRepository;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +15,11 @@ import com.microtech.smartshop.serviceImpl.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/payments")
 @RequiredArgsConstructor
 public class PaymentController {
 
@@ -25,32 +28,34 @@ public class PaymentController {
 
     private final PaymentMapper paymentMapper;
 
-
-    @PostMapping("/order/{orderId}")
-    public ResponseEntity<PaymentDTO> addPayment(
-            @PathVariable Long orderId,
-            @RequestBody PaymentDTO paymentDTO) {
-
-        PaymentDTO savedPayment = paymentService.enregistrerPaiement(orderId, paymentDTO);
-        return new ResponseEntity<>(savedPayment, HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<PaymentDTO> creerPaiement(@RequestBody PaymentDTO dto) {
+        return ResponseEntity.ok(paymentService.creerPaiement(dto));
     }
 
-    // Valider un paiement
-    @PutMapping("/{id}/validate")
-    public ResponseEntity<PaymentDTO> validatePayment(@PathVariable Long id) {
-        return ResponseEntity.ok(paymentService.validatePayment(id));
+    @PutMapping("/{id}/status")
+    public ResponseEntity<PaymentDTO> mettreAJourStatus(
+            @PathVariable Long id,
+            @RequestParam PaymentStatus status,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateEncaissement
+    ) {
+        return ResponseEntity.ok(paymentService.mettreAJourStatus(id, status, dateEncaissement));
     }
 
-    // Rejeter un paiement
-    @PutMapping("/{id}/reject")
-    public ResponseEntity<PaymentDTO> rejectPayment(@PathVariable Long id) {
-        return ResponseEntity.ok(paymentService.rejectPayment(id));
+    @DeleteMapping("/{id}")
+    public ResponseEntity<PaymentDTO> annulerPaiement(@PathVariable Long id) {
+        return ResponseEntity.ok(paymentService.annulerPaiement(id));
     }
 
-    // Récupérer tous les paiements d'une commande
-    @GetMapping("/order/{orderId}")
-    public ResponseEntity<List<PaymentDTO>> getPaymentsByOrder(@PathVariable Long orderId) {
-        return ResponseEntity.ok(paymentService.getPaymentsByOrderId(orderId));
+    @GetMapping
+    public ResponseEntity<List<PaymentDTO>> getAll() {
+        return ResponseEntity.ok(paymentService.getAll());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PaymentDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(paymentService.getById(id));
     }
 }
 
