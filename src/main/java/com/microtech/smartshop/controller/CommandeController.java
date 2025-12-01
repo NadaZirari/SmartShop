@@ -4,6 +4,7 @@ package com.microtech.smartshop.controller;
 import com.microtech.smartshop.dto.CommandeDTO;
 import com.microtech.smartshop.entity.User;
 import com.microtech.smartshop.enums.UserRole;
+import com.microtech.smartshop.exception.UnauthorizedActionException;
 import com.microtech.smartshop.service.CommandeService;
 import com.microtech.smartshop.util.AuthUtil;
 import jakarta.servlet.http.HttpSession;
@@ -32,7 +33,7 @@ public class CommandeController {
 
         // CLIENT ne peut créer que pour lui-même
         if (user.getRole() == UserRole.CLIENT && !user.getClient().getId().equals(dto.getClientId())) {
-            throw new RuntimeException("Accès refusé : vous ne pouvez créer une commande que pour votre propre compte.");
+            throw new UnauthorizedActionException("Accès refusé : vous ne pouvez créer une commande que pour votre propre compte.");
         }
 
         CommandeDTO created = commandeService.createCommande(dto);
@@ -49,7 +50,7 @@ public class CommandeController {
 
         // CLIENT ne peut consulter que ses commandes
         if (user.getRole() == UserRole.CLIENT && !user.getClient().getId().equals(commande.getClientId())) {
-            throw new RuntimeException("Accès refusé : vous ne pouvez voir que vos propres commandes.");
+            throw new UnauthorizedActionException("Accès refusé : vous ne pouvez voir que vos propres commandes.");
         }
 
         return ResponseEntity.ok(commande);
@@ -62,7 +63,7 @@ public class CommandeController {
 
         // CLIENT ne peut consulter que son historique
         if (user.getRole() == UserRole.CLIENT && !user.getClient().getId().equals(clientId)) {
-            throw new RuntimeException("Accès refusé : vous ne pouvez voir que vos propres commandes.");
+            throw new UnauthorizedActionException("Accès refusé : vous ne pouvez voir que vos propres commandes.");
         }
 
         List<CommandeDTO> commandes = commandeService.getCommandesByClient(clientId);

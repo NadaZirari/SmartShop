@@ -6,7 +6,9 @@ import com.microtech.smartshop.dto.PaymentDTO;
 import com.microtech.smartshop.entity.Paiement;
 import com.microtech.smartshop.enums.OrderStatus;
 import com.microtech.smartshop.enums.PaymentType;
+import com.microtech.smartshop.exception.BusinessException;
 import com.microtech.smartshop.exception.ResourceNotFoundException;
+import com.microtech.smartshop.exception.ValidationException;
 import com.microtech.smartshop.mapper.PaymentMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,14 +42,14 @@ public class PaymentService {
         @Transactional
         public PaymentDTO creerPaiement(PaymentDTO dto) {
             Commande commande = commandeRepository.findById(dto.getCommandeId())
-                    .orElseThrow(() -> new RuntimeException("Commande introuvable"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
 
             if (commande.getMontantRestant().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new RuntimeException("Commande déjà totalement payée");
+                throw new BusinessException("Commande déjà totalement payée");
             }
 
             if (dto.getType() == PaymentType.ESPECES && dto.getMontant().compareTo(LIMITE_ESPECES) > 0) {
-                throw new RuntimeException("Paiement espèces dépasse la limite légale de 20,000 DH");
+                throw new ValidationException("Paiement espèces dépasse la limite légale de 20,000 DH");
             }
 
             Paiement paiement = paymentMapper.toEntity(dto);
@@ -85,7 +87,7 @@ public class PaymentService {
         @Transactional
         public PaymentDTO mettreAJourStatus(Long id, PaymentStatus status, LocalDateTime dateEncaissement) {
             Paiement paiement = paymentRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Paiement introuvable"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Paiement introuvable"));
 
             paiement.setStatut(status);
 
@@ -106,7 +108,7 @@ public class PaymentService {
         @Transactional
             public PaymentDTO annulerPaiement(Long id) {
             Paiement paiement = paymentRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Paiement introuvable"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Paiement introuvable"));
 
             Commande cmd = paiement.getCommande();
             if (paiement.getStatut() == PaymentStatus.ENCAISSE) {
@@ -128,7 +130,7 @@ public class PaymentService {
         // GET PAIEMENTS D'UNE COMMANDE
         public List<PaymentDTO> getByCommande(Long commandeId) {
             Commande commande = commandeRepository.findById(commandeId)
-                    .orElseThrow(() -> new RuntimeException("Commande introuvable"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
 
             return paymentRepository.findByCommandeOrderByNumeroPaiementAsc(commande).stream()
                     .map(paymentMapper::toDTO)
@@ -138,7 +140,7 @@ public class PaymentService {
         // GET ONE PAIEMENT
         public PaymentDTO getById(Long id) {
             Paiement paiement = paymentRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Paiement introuvable"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Paiement introuvable"));
             return paymentMapper.toDTO(paiement);
         }
 }

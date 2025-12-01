@@ -1,6 +1,7 @@
 package com.microtech.smartshop.controller;
 
 import com.microtech.smartshop.enums.UserRole;
+import com.microtech.smartshop.exception.UnauthorizedActionException;
 import com.microtech.smartshop.util.AuthUtil;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -47,7 +48,7 @@ public class ClientController {
         if (user.getRole() == UserRole.CLIENT) {
             Long connectedClientId = user.getClient().getId();
             if (!connectedClientId.equals(id)) {
-                throw new RuntimeException("Accès refusé : vous ne pouvez consulter que votre propre profil.");
+                throw new UnauthorizedActionException("Accès refusé : vous ne pouvez consulter que votre propre profil.");
             }
         }
         return ResponseEntity.ok(clientService.getById(id));
@@ -82,7 +83,7 @@ public class ClientController {
         if (user.getRole() == UserRole.CLIENT) {
             Long connectedClientId = user.getClient().getId();
             if (!connectedClientId.equals(id)) {
-                throw new RuntimeException("Accès refusé : vous ne pouvez voir que vos propres statistiques.");
+                throw new UnauthorizedActionException("Accès refusé : vous ne pouvez voir que vos propres statistiques.");
             }
         }
         return ResponseEntity.ok(clientService.getStats(id));
