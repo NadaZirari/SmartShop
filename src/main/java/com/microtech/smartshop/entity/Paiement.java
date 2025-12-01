@@ -43,6 +43,7 @@ public class Paiement {
 	 @Enumerated(EnumType.STRING)
 	 private PaymentType type;
      private LocalDateTime datePaiement;     // Date de l’opération par le client
+
 	    private LocalDateTime dateEncaissement; // Date effective d’encaissement
 
 	    @Enumerated(EnumType.STRING)

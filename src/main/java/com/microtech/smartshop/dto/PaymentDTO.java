@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microtech.smartshop.enums.PaymentType;
 import com.microtech.smartshop.enums.PaymentStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
@@ -23,6 +24,7 @@ public class PaymentDTO {
     private LocalDateTime datePaiement;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
 
+    @Schema(hidden = true)
     private LocalDateTime dateEncaissement;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
 
