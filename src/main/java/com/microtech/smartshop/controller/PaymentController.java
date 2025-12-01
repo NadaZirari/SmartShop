@@ -4,6 +4,8 @@ package com.microtech.smartshop.controller;
 import com.microtech.smartshop.enums.PaymentStatus;
 import com.microtech.smartshop.mapper.PaymentMapper;
 import com.microtech.smartshop.repository.CommandeRepository;
+import com.microtech.smartshop.util.AuthUtil;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +29,11 @@ public class PaymentController {
     private final CommandeRepository commandeRepository;
 
     private final PaymentMapper paymentMapper;
+    private final AuthUtil authUtil;
 
     @PostMapping
-    public ResponseEntity<PaymentDTO> creerPaiement(@RequestBody PaymentDTO dto) {
+    public ResponseEntity<PaymentDTO> creerPaiement(@RequestBody PaymentDTO dto, HttpSession session) {
+        authUtil.requireAdmin(session); // seulement ADMIN
         return ResponseEntity.ok(paymentService.creerPaiement(dto));
     }
 
@@ -44,17 +48,21 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<PaymentDTO> annulerPaiement(@PathVariable Long id) {
+    public ResponseEntity<PaymentDTO> annulerPaiement(@PathVariable Long id,HttpSession session) {
+        authUtil.requireAdmin(session);
         return ResponseEntity.ok(paymentService.annulerPaiement(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<PaymentDTO>> getAll() {
+    public ResponseEntity<List<PaymentDTO>> getAll( HttpSession session) {
+        authUtil.requireAdmin(session);
         return ResponseEntity.ok(paymentService.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PaymentDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<PaymentDTO> getById(@PathVariable Long id, HttpSession session) {
+        authUtil.requireAdmin(session);
+
         return ResponseEntity.ok(paymentService.getById(id));
     }
 }

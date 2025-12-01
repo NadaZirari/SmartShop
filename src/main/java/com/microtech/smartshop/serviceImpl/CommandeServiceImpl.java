@@ -49,6 +49,7 @@ public class CommandeServiceImpl  implements CommandeService {
     @Transactional
     public CommandeDTO createCommande(CommandeDTO dto) {
 
+
         Client client = clientRepository.findById(dto.getClientId())
                 .orElseThrow(() -> new ResourceNotFoundException("Client non trouvé"));
 
@@ -97,17 +98,12 @@ public class CommandeServiceImpl  implements CommandeService {
 // conversion remise double -> BigDecimal
         BigDecimal bdRemise = BigDecimal.valueOf(remise);
 
-// Montant HT
-        BigDecimal montantHT = sousTotal.subtract(bdRemise);
-
-// TVA
-        BigDecimal tva = montantHT.multiply(BigDecimal.valueOf(0.20));
-
-// Total
-        BigDecimal total = montantHT.add(tva);
+        BigDecimal montantHT = sousTotal.subtract(bdRemise).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal tva = montantHT.multiply(TVA_RATE).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal total = montantHT.add(tva).setScale(2, BigDecimal.ROUND_HALF_UP);
 
 // Affectation
-        commande.setSousTotal(sousTotal);
+        commande.setSousTotal(sousTotal.setScale(2, BigDecimal.ROUND_HALF_UP));
         commande.setRemise(remise); // reste double
         commande.setTva(tva);
         commande.setTotal(total);
