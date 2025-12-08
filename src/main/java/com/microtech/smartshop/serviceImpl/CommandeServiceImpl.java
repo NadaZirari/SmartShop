@@ -3,6 +3,7 @@ package com.microtech.smartshop.serviceImpl;
 import com.microtech.smartshop.exception.BusinessException;
 import com.microtech.smartshop.exception.ResourceNotFoundException;
 import com.microtech.smartshop.exception.ValidationException;
+import com.microtech.smartshop.mapper.CommandeMapper;
 import com.microtech.smartshop.util.AuthUtil;
 
 import com.microtech.smartshop.repository.ClientRepository;
@@ -33,15 +34,17 @@ public class CommandeServiceImpl  implements CommandeService {
     private final CommandeRepository commandeRepository;
     private final ProductRepository productRepository;
     private final ClientRepository clientRepository;
+    private final CommandeMapper commandeMapper;
 
 
     public CommandeServiceImpl(CommandeRepository commandeRepository,
                                ProductRepository productRepository,
-                               ClientRepository clientRepository,
+                               ClientRepository clientRepository, CommandeMapper commandeMapper,
                                AuthUtil authUtil) {
         this.commandeRepository = commandeRepository;
         this.productRepository = productRepository;
         this.clientRepository = clientRepository;
+        this.commandeMapper = commandeMapper;
     }
 
     private static final BigDecimal TVA_RATE = new BigDecimal("0.20");
@@ -114,7 +117,7 @@ public class CommandeServiceImpl  implements CommandeService {
 
         commandeRepository.save(commande);
 
-        return mapToDTO(commande);
+        return commandeMapper.toDto(commande);
     }
 
     private double calculRemiseFidelite(Client client, double sousTotal) {
@@ -132,42 +135,20 @@ public class CommandeServiceImpl  implements CommandeService {
         }
         return 0;
     }
-    private CommandeDTO mapToDTO(Commande c) {
 
-        List<OrderItemDTO> items = c.getOrderItems().stream()
-                .map(item -> OrderItemDTO.builder()
-                        .produitId(item.getProduit().getId())
-                        .quantite(item.getQuantite())
-                        .prixUnitaireHT(item.getPrixUnitaireHT())
-                        .totalLigne(item.getTotalLigne())
-                        .build())
-                .collect(Collectors.toList());
-
-        return CommandeDTO.builder()
-                .id(c.getId())
-                .clientId(c.getClient().getId())
-                .sousTotal(c.getSousTotal())
-                .remise(c.getRemise())
-                .tva(c.getTva())
-                .total(c.getTotal())
-                .montantRestant(c.getMontantRestant())
-                .statut(c.getStatut() != null ? c.getStatut().name() : null) // conversion enum -> String
-                .codePromo(c.getCodePromo())
-                .items(items)
-                .build();
-    }
 
     @Override
     public CommandeDTO getCommandeById(Long id) {
         Commande commande = commandeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Commande non trouvée"));
-        return mapToDTO(commande);
+        return commandeMapper.toDto(commande);
+
     }
 
     @Override
     public List<CommandeDTO> getCommandesByClient(Long clientId) {
         return commandeRepository.findByClientId(clientId).stream()
-                .map(this::mapToDTO)
+                .map(commandeMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -233,7 +214,9 @@ public class CommandeServiceImpl  implements CommandeService {
     // GET ALL
     public List<CommandeDTO> getAll() {
         return commandeRepository.findAll()
-                .stream().map(this::mapToDTO).toList();
+                .stream()
+                .map(commandeMapper::toDto)
+                .toList();
     }
 
 

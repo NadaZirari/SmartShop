@@ -3,44 +3,15 @@ package com.microtech.smartshop.mapper;
 import com.microtech.smartshop.dto.PaymentDTO;
 import com.microtech.smartshop.entity.Commande;
 import com.microtech.smartshop.entity.Paiement;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.springframework.stereotype.Component;
+@Mapper(componentModel = "spring")
+public interface PaymentMapper {
 
-@Component
-public class PaymentMapper {
+    @Mapping(source = "commande.id", target = "commandeId")
+    PaymentDTO toDTO(Paiement paiement);
 
-    public PaymentDTO toDTO(Paiement paiement) {
-        if (paiement == null) return null;
-
-        return PaymentDTO.builder()
-                .id(paiement.getId())
-                .commandeId(paiement.getCommande() != null ? paiement.getCommande().getId() : null)
-                .montant(paiement.getMontant())
-                .type(paiement.getType())
-                .datePaiement(paiement.getDatePaiement())
-                .dateEncaissement(paiement.getDateEncaissement())
-                .statut(paiement.getStatut())
-                .build();
-    }
-
-    public Paiement toEntity(PaymentDTO dto) {
-        if (dto == null) return null;
-
-        Paiement paiement = Paiement.builder()
-                .id(dto.getId())
-                .montant(dto.getMontant())
-                .type(dto.getType())
-                .datePaiement(dto.getDatePaiement())
-                .dateEncaissement(dto.getDateEncaissement())
-                .statut(dto.getStatut())
-                .build();
-
-        //  reconstruire l'objet Commande
-        if (dto.getCommandeId() != null) {
-            Commande commande = new Commande();
-            commande.setId(dto.getCommandeId());
-            paiement.setCommande(commande);
-        }
-
-        return paiement;
-    }
+    @Mapping(source = "commandeId", target = "commande.id")
+    Paiement toEntity(PaymentDTO dto);
 }
