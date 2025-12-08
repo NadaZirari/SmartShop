@@ -183,11 +183,11 @@ public class CommandeServiceImpl  implements CommandeService {
         client.setTotalDepense(client.getTotalDepense().add(commande.getTotal()));
 
         // Recalcul du niveau de fidélité
-        if (client.getTotalDepense().compareTo(BigDecimal.valueOf(50000)) >= 0) {
+        if (client.getTotalDepense().compareTo(BigDecimal.valueOf(15000)) >= 0) {
             client.setNiveau(CustomerTier.PLATINUM);
-        } else if (client.getTotalDepense().compareTo(BigDecimal.valueOf(20000)) >= 0) {
-            client.setNiveau(CustomerTier.GOLD);
         } else if (client.getTotalDepense().compareTo(BigDecimal.valueOf(5000)) >= 0) {
+            client.setNiveau(CustomerTier.GOLD);
+        } else if (client.getTotalDepense().compareTo(BigDecimal.valueOf(1000)) >= 0) {
             client.setNiveau(CustomerTier.SILVER);
         } else {
             client.setNiveau(CustomerTier.BASIC);
