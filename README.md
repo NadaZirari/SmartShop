@@ -60,6 +60,8 @@ Génération de codes uniques PROMO-XXXX (ADMIN uniquement)
 Remise fixe de 5% (cumulable avec fidélité)
 Diagramme de classes UML
 
+# Diagramme de classe
+<img width="650" height="425" alt="d" src="https://github.com/user-attachments/assets/4a843c24-0f2b-4c54-98d1-0195cf9e38b0" />
 
 
 # Technologies utilisées
