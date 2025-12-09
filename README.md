@@ -61,7 +61,7 @@ Remise fixe de 5% (cumulable avec fidélité)
 Diagramme de classes UML
 
 # Diagramme de classe
-<img width="656" height="431" alt="dernierclassdiagram" src="https://github.com/user-attachments/assets/9c5b2bef-0248-4cc9-97bf-88dba3e8c434" />
+<img width="650" height="425" alt="d" src="https://github.com/user-attachments/assets/4a843c24-0f2b-4c54-98d1-0195cf9e38b0" />
 
 
 # Technologies utilisées
