@@ -61,8 +61,8 @@ Remise fixe de 5% (cumulable avec fidélité)
 Diagramme de classes UML
 
 # Diagramme de classe
+<img width="645" height="433" alt="Capture d&#39;écran 2025-12-09 210727" src="https://github.com/user-attachments/assets/8cd9755f-fcd0-413a-85ba-e1b3b56ba64a" />
 
-![Capture d'écran 2025-12-09 210727.png](../../../Pictures/Screenshots/Capture%20d%27%C3%A9cran%202025-12-09%20210727.png)
 # Technologies utilisées
 Java 17
 Spring Boot 3
