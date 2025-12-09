@@ -1,6 +1,5 @@
 package com.microtech.smartshop.service;
 
-
 import com.microtech.smartshop.dto.ClientDTO;
 import com.microtech.smartshop.entity.Client;
 import com.microtech.smartshop.entity.User;
@@ -12,43 +11,41 @@ import com.microtech.smartshop.mapper.ClientMapper;
 import com.microtech.smartshop.repository.ClientRepository;
 import com.microtech.smartshop.repository.CommandeRepository;
 import com.microtech.smartshop.repository.UserRepository;
-
 import com.microtech.smartshop.serviceImpl.ClientServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+// Active Mockito pour JUnit 5
+@ExtendWith(MockitoExtension.class)
 public class ClientServiceImplTest {
 
+    @Mock
     private ClientRepository clientRepository;
+
+    @Mock
     private CommandeRepository commandeRepository;
+
+    @Mock
     private ClientMapper clientMapper;
+
+    @Mock
     private UserRepository userRepository;
 
+    // Injecte automatiquement les mocks dans le service
+    @InjectMocks
     private ClientServiceImpl service;
-
-    @BeforeEach
-    void setUp() {
-        clientRepository = mock(ClientRepository.class);
-        commandeRepository = mock(CommandeRepository.class);
-        clientMapper = mock(ClientMapper.class);
-        userRepository = mock(UserRepository.class);
-
-        service = new ClientServiceImpl(
-                clientRepository,
-                commandeRepository,
-                clientMapper,
-                null,      // CommandeMapper non utilisé ici
-                userRepository
-        );
-    }
 
     // --------------------------------------------------------------------
     // TEST CREATE CLIENT
@@ -56,14 +53,12 @@ public class ClientServiceImplTest {
     @Test
     void createClient_success() {
 
-        // DTO reçu
         ClientDTO dto = new ClientDTO();
         dto.setUsername("amine");
         dto.setPassword("1234");
         dto.setNom("Amine");
         dto.setEmail("amine@mail.com");
 
-        // User saved
         User savedUser = new User();
         savedUser.setId(10L);
         savedUser.setUsername("amine");
@@ -71,11 +66,9 @@ public class ClientServiceImplTest {
 
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-        // Mapper : dto -> entity
         Client entity = new Client();
         when(clientMapper.toEntity(dto)).thenReturn(entity);
 
-        // Repository : entity saved
         Client savedClient = new Client();
         savedClient.setId(100L);
         savedClient.setUser(savedUser);
@@ -83,23 +76,17 @@ public class ClientServiceImplTest {
 
         when(clientRepository.save(any(Client.class))).thenReturn(savedClient);
 
-        // Mapper : entity -> dto
         ClientDTO returnedDto = new ClientDTO();
         returnedDto.setId(100L);
         when(clientMapper.toDto(savedClient)).thenReturn(returnedDto);
 
-        // -------------------------
-        // CALL SERVICE
-        // -------------------------
         ClientDTO result = service.create(dto);
 
-        // Assertions
         assertNotNull(result);
         assertEquals(100L, result.getId());
         assertEquals(10L, result.getUserId());
         assertEquals("amine", result.getUsername());
 
-        // Capture client saved to DB
         ArgumentCaptor<Client> captor = ArgumentCaptor.forClass(Client.class);
         verify(clientRepository).save(captor.capture());
 
@@ -147,9 +134,7 @@ public class ClientServiceImplTest {
         when(clientRepository.findByIdAndDeletedFalse(1L))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getById(1L);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getById(1L));
     }
 
     // --------------------------------------------------------------------
@@ -179,13 +164,11 @@ public class ClientServiceImplTest {
         when(clientRepository.findByIdAndDeletedFalse(1L))
                 .thenReturn(Optional.of(c));
 
-        assertThrows(BusinessException.class, () -> {
-            service.delete(1L);
-        });
+        assertThrows(BusinessException.class, () -> service.delete(1L));
     }
 
     // --------------------------------------------------------------------
-    // TEST GETLOYALTYLEVEL
+    // TEST GET LOYALTY LEVEL
     // --------------------------------------------------------------------
     @Test
     void getLoyaltyLevel_success() {
@@ -197,7 +180,6 @@ public class ClientServiceImplTest {
                 .thenReturn(Optional.of(c));
 
         String level = service.getLoyaltyLevel(1L);
-
         assertEquals("GOLD", level);
     }
 
@@ -226,4 +208,3 @@ public class ClientServiceImplTest {
         verify(clientRepository).save(c);
     }
 }
-
