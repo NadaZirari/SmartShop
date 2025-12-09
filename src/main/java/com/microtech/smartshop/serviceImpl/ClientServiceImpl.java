@@ -29,7 +29,6 @@ import com.microtech.smartshop.mapper.CommandeMapper;
 import com.microtech.smartshop.repository.ClientRepository;
 import com.microtech.smartshop.repository.CommandeRepository;
 import com.microtech.smartshop.service.ClientService;
-import com.microtech.smartshop.service.ClientStats;
 
 import java.util.stream.Collectors;
 
@@ -135,14 +134,32 @@ public class ClientServiceImpl implements ClientService {
 	}
 
 	@Override
-	public ClientStats getStats(Long clientId) {
-		Integer count = commandeRepository.countConfirmedByClient(clientId);
-		Double sum = commandeRepository.sumTotalConfirmedByClient(clientId);
-		ClientStats s = new ClientStats();
-		s.setTotalCommandes(count == null ? 0 : count);
-        s.setTotalDepense(sum == null ? BigDecimal.ZERO : BigDecimal.valueOf(sum).setScale(2, RoundingMode.HALF_UP));
+	public ClientDTO  getStats(Long clientId) {
+        // Récupérer le client complet
+        Client client = clientRepository.findByIdAndDeletedFalse(clientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
 
-        return s;
+        // Mapper le client vers DTO
+        ClientDTO dto = clientMapper.toDto(client);
+
+        // Statistiques
+        Integer count = commandeRepository.countConfirmedByClient(clientId);
+        Double sum = commandeRepository.sumTotalConfirmedByClient(clientId);
+
+        dto.setTotalCommandes(count != null ? count : 0);
+        dto.setTotalDepense(sum != null ? BigDecimal.valueOf(sum).setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO);
+
+        List<Commande> commandes = commandeRepository.findByClientIdOrderByDateDesc(clientId);
+        if (!commandes.isEmpty()) {
+            if (commandes.get(0).getDate() != null) {
+                dto.setLastOrderDate(commandes.get(0).getDate().toLocalDate());
+            }
+            if (commandes.get(commandes.size() - 1).getDate() != null) {
+                dto.setFirstOrderDate(commandes.get(commandes.size() - 1).getDate().toLocalDate());
+            }
+        }
+
+        return dto;
 	}
 
 	@Override

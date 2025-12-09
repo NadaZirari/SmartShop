@@ -35,7 +35,7 @@ public class ClientDTO {
     private String niveau;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private BigDecimal totalCommandes;
+    private Integer totalCommandes;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal totalDepense;

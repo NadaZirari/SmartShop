@@ -17,7 +17,7 @@ public interface ClientService {
 
 
 	List<CommandeDTO> getCommandeHistory(Long clientId);
-	ClientStats getStats(Long clientId);
+	ClientDTO getStats(Long clientId);
 	String getLoyaltyLevel(Long clientId);
 	void recalculateLoyaltyLevel(Long clientId);
 

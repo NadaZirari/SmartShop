@@ -20,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import com.microtech.smartshop.dto.ClientDTO;
 import lombok.RequiredArgsConstructor;
 import com.microtech.smartshop.service.ClientService;
-import com.microtech.smartshop.service.ClientStats;
 
 @RestController
 @RequestMapping("/api/clients")
@@ -74,7 +73,7 @@ public class ClientController {
     }
 
     @GetMapping("/{id}/stats")
-    public ResponseEntity<ClientStats> getClientStats(@PathVariable Long id , HttpSession session) {
+    public ResponseEntity<ClientDTO> getClientStats(@PathVariable Long id , HttpSession session) {
         authUtil.requireClientOrAdmin(session);
 
         var user = authUtil.getUserFromSession(session);
